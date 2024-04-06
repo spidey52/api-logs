@@ -2,6 +2,7 @@ package notification_log_handler
 
 import (
 	"context"
+	"log"
 	"log_manager/utils"
 
 	"github.com/gin-gonic/gin"
@@ -56,6 +57,61 @@ func GetNotificationLogs(c *gin.Context) {
 	c.IndentedJSON(200, gin.H{
 		"logs":  logs,
 		"count": count,
+	})
+
+}
+
+func GetDailyNotificationCount(c *gin.Context) {
+	pipeline := []bson.M{}
+
+	pipeline = append(pipeline, bson.M{
+		"$group": bson.M{
+			"_id": bson.M{
+				"date":     bson.M{"$dateToString": bson.M{"format": "%Y-%m-%d", "date": "$createdAt", "timezone": "+05:30"}},
+				"template": "$template",
+			},
+			"count": bson.M{"$sum": 1},
+		},
+	})
+
+	pipeline = append(pipeline, bson.M{
+		"$project": bson.M{
+			"date":     "$_id.date",
+			"template": "$_id.template",
+			"count":    "$count",
+		},
+	})
+
+	pipeline = append(pipeline, bson.M{
+		"$sort": bson.M{
+			"date": -1,
+		},
+	})
+
+	result, err := utils.NotificationLogModel.Aggregate(context.Background(), pipeline)
+
+	if err != nil {
+		log.Println("Error in getting the daily notification count\n", err)
+		return
+	}
+
+	type NotificationCount struct {
+		Date     string `json:"date" bson:"date"`
+		Template string `json:"template"  bson:"template"`
+		Count    int32  `json:"count" bson:"count"`
+	}
+
+	var res []NotificationCount
+
+	err = result.All(context.Background(), &res)
+
+	if err != nil {
+		log.Println("Error in getting the daily notification count\n", err)
+		return
+	}
+
+	c.IndentedJSON(200, gin.H{
+		"logs": res,
 	})
 
 }

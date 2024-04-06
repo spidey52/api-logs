@@ -14,7 +14,7 @@ import (
 
 func init() {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Error loading .env file")
 	}
 }
 
@@ -46,6 +46,7 @@ func main() {
 	r.GET("/api-logs/:id", api_logs_handler.GetLogDetails)
 
 	r.GET("/notification-logs", notification_log_handler.GetNotificationLogs)
+	r.GET("/notification-logs/daily-count", notification_log_handler.GetDailyNotificationCount)
 
 	fmt.Println("Server is running on port 8080")
 	r.Run(":8080") // listen and serve on
