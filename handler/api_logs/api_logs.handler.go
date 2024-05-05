@@ -243,7 +243,7 @@ func GetUrlsForFilter(c *gin.Context) {
 		return
 	}
 
-	result, err := utils.ApiLogModel.Distinct(context.Background(), "url", bson.M{})
+	result, err := utils.ApiLogModel.Distinct(context.Background(), "baseUrl", bson.M{})
 
 	if err != nil {
 		c.IndentedJSON(500, gin.H{
