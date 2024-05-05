@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log_manager/utils"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -38,6 +37,7 @@ func GetApiLogs(c *gin.Context) {
 	method := c.Query("method")
 	sortKey := c.Query("sortKey")
 	userId := c.Query("userId")
+	baseUrl := c.Query("baseUrl")
 	// sortValue := c.Query("sortValue")
 
 	filter := bson.M{}
@@ -69,6 +69,10 @@ func GetApiLogs(c *gin.Context) {
 
 	if paginationData.Search != "" {
 		filter["url"] = bson.M{"$regex": paginationData.Search, "$options": "i"}
+	}
+
+	if baseUrl != "" {
+		filter["baseUrl"] = baseUrl
 	}
 
 	if !paginationData.StartDate.IsZero() && !paginationData.EndDate.IsZero() {
@@ -231,17 +235,7 @@ func UserSelector(c *gin.Context) {
 
 }
 
-var cachedUrls []string = []string{}
-var lastCachedUrlsTime time.Time = time.Now().Add(-10 * time.Minute)
-
 func GetUrlsForFilter(c *gin.Context) {
-
-	if time.Since(lastCachedUrlsTime) < 5*time.Minute {
-		c.IndentedJSON(200, gin.H{
-			"urls": cachedUrls,
-		})
-		return
-	}
 
 	result, err := utils.ApiLogModel.Distinct(context.Background(), "baseUrl", bson.M{})
 
@@ -251,12 +245,6 @@ func GetUrlsForFilter(c *gin.Context) {
 		})
 		return
 	}
-
-	for i, url := range result {
-		result[i] = url.(string)
-	}
-
-	lastCachedUrlsTime = time.Now()
 
 	c.IndentedJSON(200, gin.H{
 		"urls": result,
