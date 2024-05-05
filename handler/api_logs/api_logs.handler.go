@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log_manager/utils"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -226,6 +227,39 @@ func UserSelector(c *gin.Context) {
 	c.IndentedJSON(200, gin.H{
 		"count": len(users),
 		"users": users,
+	})
+
+}
+
+var cachedUrls []string = []string{}
+var lastCachedUrlsTime time.Time = time.Now().Add(-10 * time.Minute)
+
+func GetUrlsForFilter(c *gin.Context) {
+
+	if time.Since(lastCachedUrlsTime) < 5*time.Minute {
+		c.IndentedJSON(200, gin.H{
+			"urls": cachedUrls,
+		})
+		return
+	}
+
+	result, err := utils.ApiLogModel.Distinct(context.Background(), "url", bson.M{})
+
+	if err != nil {
+		c.IndentedJSON(500, gin.H{
+			"message": "Error in getting the urls\n" + err.Error(),
+		})
+		return
+	}
+
+	for i, url := range result {
+		result[i] = url.(string)
+	}
+
+	lastCachedUrlsTime = time.Now()
+
+	c.IndentedJSON(200, gin.H{
+		"urls": result,
 	})
 
 }

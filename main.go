@@ -43,7 +43,7 @@ func main() {
 
 	r.GET("/api-logs", api_logs_handler.GetApiLogs)
 	// r.GET("/api-urls", getUrlsForFilter)
-	// r.GET("/api-logs/urls", api_logs_handler.GetUrlsForFilter)
+	r.GET("/api-logs/urls", api_logs_handler.GetUrlsForFilter)
 	r.GET("/api-logs/users", api_logs_handler.UserSelector)
 
 	r.GET("/api-logs/:id", api_logs_handler.GetLogDetails)
