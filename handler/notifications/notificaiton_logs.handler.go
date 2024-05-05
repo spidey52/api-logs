@@ -115,3 +115,19 @@ func GetDailyNotificationCount(c *gin.Context) {
 	})
 
 }
+
+func GetNotificationTemplates(c *gin.Context) {
+	result, err := utils.NotificationLogModel.Distinct(context.Background(), "template", bson.M{})
+
+	if err != nil {
+		c.IndentedJSON(500, gin.H{
+			"message": "Error in getting the notification types\n" + err.Error(),
+		})
+		return
+	}
+
+	c.IndentedJSON(200, gin.H{
+		"templates": result,
+	})
+
+}

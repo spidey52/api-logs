@@ -43,8 +43,12 @@ func main() {
 
 	r.GET("/api-logs", api_logs_handler.GetApiLogs)
 	// r.GET("/api-urls", getUrlsForFilter)
+	// r.GET("/api-logs/urls", api_logs_handler.GetUrlsForFilter)
+	r.GET("/api-logs/users", api_logs_handler.UserSelector)
+
 	r.GET("/api-logs/:id", api_logs_handler.GetLogDetails)
 
+	r.GET("/notification-logs/templates", notification_log_handler.GetNotificationTemplates)
 	r.GET("/notification-logs", notification_log_handler.GetNotificationLogs)
 	r.GET("/notification-logs/daily-count", notification_log_handler.GetDailyNotificationCount)
 
