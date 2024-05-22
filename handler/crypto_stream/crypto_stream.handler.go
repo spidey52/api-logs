@@ -1,8 +1,11 @@
 package cryptostream
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log_manager/config"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -89,19 +92,36 @@ type TickerData struct {
 	Price  float64
 }
 
-func GetTickerData(tickers []string) []TickerData {
+func getTickerDetailsFromRedis(ticker []string) []TickerData {
 
-	var tickerData []TickerData = []TickerData{}
+	// Implement Redis logic here
+	vals := config.DefaultRedis().HMGet(context.TODO(), "satyam-coins", ticker...)
+	result := vals.Val()
 
-	for _, ticker := range tickers {
-		tickerData = append(tickerData, TickerData{
-			Ticker: ticker,
-			Price:  0,
+	tickerResult := []TickerData{}
+
+	// string to float64
+
+	for i, val := range ticker {
+		value := result[i]
+
+		if value == nil {
+			continue
+		}
+
+		floatValue, err := strconv.ParseFloat(value.(string), 64)
+
+		if err != nil {
+			continue
+		}
+
+		tickerResult = append(tickerResult, TickerData{
+			Ticker: val,
+			Price:  floatValue,
 		})
-
 	}
 
-	return tickerData
+	return tickerResult
 }
 
 func broadcastMessage(conn *websocket.Conn, tickers string) error {
@@ -118,9 +138,10 @@ func broadcastMessage(conn *websocket.Conn, tickers string) error {
 		return fmt.Errorf("tickers list is empty")
 	}
 
-	for {
+	getTickerDetailsFromRedis(tickerList)
 
-		tickerData := GetTickerData(tickerList)
+	for {
+		tickerData := getTickerDetailsFromRedis(tickerList)
 
 		jsonData := map[string]interface{}{
 			"tickers": tickerData,
