@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	api_logs_handler "log_manager/handler/api_logs"
+	cryptostream "log_manager/handler/crypto_stream"
 	notification_log_handler "log_manager/handler/notifications"
 	"time"
 
@@ -20,6 +21,8 @@ func init() {
 
 func main() {
 	gin.SetMode(gin.ReleaseMode)
+
+	// go cryptostream.BroadcastMessage()
 
 	r := gin.Default()
 
@@ -51,6 +54,8 @@ func main() {
 	r.GET("/notification-logs/templates", notification_log_handler.GetNotificationTemplates)
 	r.GET("/notification-logs", notification_log_handler.GetNotificationLogs)
 	r.GET("/notification-logs/daily-count", notification_log_handler.GetDailyNotificationCount)
+
+	r.GET("/crypto-stream", cryptostream.CryptoStreamHandler)
 
 	fmt.Println("Server is running on port 8080")
 	r.Run(":8080") // listen and serve on
