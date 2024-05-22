@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log_manager/config"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,7 @@ import (
 // 	}
 // })
 
+var lock = &sync.Mutex{}
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -33,11 +35,15 @@ var upgrader = websocket.Upgrader{
 var connections = make(map[*websocket.Conn]bool)
 
 func addConnection(conn *websocket.Conn) {
+	lock.Lock()
 	connections[conn] = true
+	lock.Unlock()
 }
 
 func removeConnection(conn *websocket.Conn) {
+	lock.Lock()
 	delete(connections, conn)
+	lock.Unlock()
 
 	conn.Close()
 }
@@ -88,8 +94,8 @@ func parseTickers(msg string) []string {
 }
 
 type TickerData struct {
-	Ticker string
-	Price  float64
+	Ticker string  `json:"ticker"`
+	Price  float64 `json:"price"`
 }
 
 func getTickerDetailsFromRedis(ticker []string) []TickerData {
@@ -127,9 +133,16 @@ func getTickerDetailsFromRedis(ticker []string) []TickerData {
 func broadcastMessage(conn *websocket.Conn, tickers string) error {
 	tickerList := parseTickers(tickers)
 
+	emptyTickerList := make([]string, 0)
+
 	if len(tickerList) == 0 {
 
-		err := conn.WriteMessage(websocket.TextMessage, []byte("tickers list is empty"))
+		message, _ := json.Marshal(map[string]interface{}{
+			"error":   "tickers list is empty",
+			"tickers": emptyTickerList,
+		})
+
+		err := conn.WriteMessage(websocket.TextMessage, []byte(message))
 
 		if err != nil {
 			return err
