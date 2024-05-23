@@ -2,6 +2,7 @@ package notification_log_handler
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log_manager/utils"
 
@@ -61,8 +62,29 @@ func GetNotificationLogs(c *gin.Context) {
 
 }
 
+func getConditionAggregation(field, value, fulfilled, rest any) bson.M {
+	return bson.M{
+		"$cond": bson.M{
+			"if":   bson.M{"$eq": []interface{}{fmt.Sprintf("$%s", field), value}},
+			"then": fulfilled,
+			"else": rest,
+		},
+	}
+}
+
 func GetDailyNotificationCount(c *gin.Context) {
+
+	paginationData := utils.GetQueryData(c)
+
 	pipeline := []bson.M{}
+
+	if !paginationData.StartDate.IsZero() && !paginationData.EndDate.IsZero() {
+		pipeline = append(pipeline, bson.M{
+			"$match": bson.M{
+				"createdAt": bson.M{"$gte": paginationData.StartDate, "$lte": paginationData.EndDate},
+			},
+		})
+	}
 
 	pipeline = append(pipeline, bson.M{
 		"$group": bson.M{
@@ -70,15 +92,20 @@ func GetDailyNotificationCount(c *gin.Context) {
 				"date":     bson.M{"$dateToString": bson.M{"format": "%Y-%m-%d", "date": "$createdAt", "timezone": "+05:30"}},
 				"template": "$template",
 			},
-			"count": bson.M{"$sum": 1},
+			// "count": bson.M{"$sum": 1},
+			"count":         bson.M{"$sum": 1},
+			"failed_count":  bson.M{"$sum": getConditionAggregation("status", "failed", 1, 0)},
+			"success_count": bson.M{"$sum": getConditionAggregation("status", "success", 1, 0)},
 		},
 	})
 
 	pipeline = append(pipeline, bson.M{
 		"$project": bson.M{
-			"date":     "$_id.date",
-			"template": "$_id.template",
-			"count":    "$count",
+			"date":          "$_id.date",
+			"template":      "$_id.template",
+			"count":         1,
+			"failed_count":  1,
+			"success_count": 1,
 		},
 	})
 
@@ -96,9 +123,11 @@ func GetDailyNotificationCount(c *gin.Context) {
 	}
 
 	type NotificationCount struct {
-		Date     string `json:"date" bson:"date"`
-		Template string `json:"template"  bson:"template"`
-		Count    int32  `json:"count" bson:"count"`
+		Date         string `json:"date" bson:"date"`
+		Template     string `json:"template"  bson:"template"`
+		Count        int32  `json:"count" bson:"count"`
+		FailedCount  int32  `json:"failed_count" bson:"failed_count"`
+		SuccessCount int32  `json:"success_count" bson:"success_count"`
 	}
 
 	var res []NotificationCount
