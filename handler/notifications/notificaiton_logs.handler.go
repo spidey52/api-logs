@@ -13,12 +13,17 @@ import (
 func GetNotificationLogs(c *gin.Context) {
 	paginationData := utils.GetQueryData(c)
 	status := c.Query("status")
+	template := c.Query("template")
 	sortKey := c.Query("sortKey")
 
 	filter := bson.M{}
 
 	if status != "" {
 		filter["status"] = status
+	}
+
+	if template != "" {
+		filter["template"] = template
 	}
 
 	if paginationData.Search != "" {
