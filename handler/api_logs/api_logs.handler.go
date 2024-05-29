@@ -1,6 +1,7 @@
 package api_logs_handler
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"log_manager/utils"
@@ -35,7 +36,7 @@ func GetApiLogs(c *gin.Context) {
 	paginationData := utils.GetQueryData(c)
 	status := c.Query("status")
 	method := c.Query("method")
-	sortKey := c.Query("sortKey")
+	sortKey := cmp.Or(c.Query("sortKey"), c.Query("sortBy"), "createdAt")
 	userId := c.Query("userId")
 	baseUrl := c.Query("baseUrl")
 	// sortValue := c.Query("sortValue")
