@@ -10,6 +10,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+var templateMap = map[string]string{}
+
+func init() {
+	templateMap["notification_bucket"] = "#FF0000"
+	templateMap["notification_order"] = "#007bff"
+	templateMap["notification_order_vehicle"] = "#800080"
+	templateMap["notification_vehicle_parked_in"] = "#008000"
+}
+
 func GetNotificationLogs(c *gin.Context) {
 	paginationData := utils.GetQueryData(c)
 	status := c.Query("status")
@@ -133,6 +142,8 @@ func GetDailyNotificationCount(c *gin.Context) {
 		Count        int32  `json:"count" bson:"count"`
 		FailedCount  int32  `json:"failed_count" bson:"failed_count"`
 		SuccessCount int32  `json:"success_count" bson:"success_count"`
+
+		TemplateColor string `json:"template_color"`
 	}
 
 	var res []NotificationCount
@@ -142,6 +153,10 @@ func GetDailyNotificationCount(c *gin.Context) {
 	if err != nil {
 		log.Println("Error in getting the daily notification count\n", err)
 		return
+	}
+
+	for i, r := range res {
+		res[i].TemplateColor = templateMap[r.Template]
 	}
 
 	c.IndentedJSON(200, gin.H{

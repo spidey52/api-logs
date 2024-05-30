@@ -82,11 +82,7 @@ func GetApiLogs(c *gin.Context) {
 
 	options := utils.GetPaginatedOptions(paginationData, nil)
 
-	options.SetSort(bson.M{"createdAt": -1})
-
-	if sortKey != "" {
-		options.SetSort(bson.M{sortKey: -1})
-	}
+	options.SetSort(bson.M{sortKey: -1})
 
 	options.SetProjection(bson.M{
 		"baseUrl":   1,
