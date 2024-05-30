@@ -17,6 +17,7 @@ func init() {
 	templateMap["notification_order"] = "#007bff"
 	templateMap["notification_order_vehicle"] = "#800080"
 	templateMap["notification_vehicle_parked_in"] = "#008000"
+	templateMap["notification_vehicle_request"] = "#FFA500"
 }
 
 func GetNotificationLogs(c *gin.Context) {
