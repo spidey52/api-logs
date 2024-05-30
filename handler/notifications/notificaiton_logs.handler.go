@@ -109,8 +109,8 @@ func GetDailyNotificationCount(c *gin.Context) {
 			},
 			// "count": bson.M{"$sum": 1},
 			"count":         bson.M{"$sum": 1},
-			"failed_count":  bson.M{"$sum": getConditionAggregation("status", "failed", 1, 0)},
-			"success_count": bson.M{"$sum": getConditionAggregation("status", "success", 1, 0)},
+			"failed_count":  bson.M{"$sum": getConditionAggregation("status", "FAILED", 1, 0)},
+			"success_count": bson.M{"$sum": getConditionAggregation("status", "SENT", 1, 0)},
 		},
 	})
 
