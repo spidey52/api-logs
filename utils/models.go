@@ -14,7 +14,7 @@ type Model struct {
 }
 
 var NotificationLogModel = Model{
-	config.DB.Collection("notification_logs"),
+	config.USERDB.Collection("notification_logs"),
 }
 
 var ApiLogModel = Model{
@@ -22,7 +22,7 @@ var ApiLogModel = Model{
 }
 
 var UserModel = Model{
-	config.DB.Collection("users"),
+	config.USERDB.Collection("users"),
 }
 
 func (m *Model) FindAll(filter bson.M, opt *options.FindOptions) ([]bson.M, error) {

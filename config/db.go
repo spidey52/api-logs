@@ -12,9 +12,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var DB = connectDB()
+var DB = connectDB("ddoc-logs")
+var USERDB = connectDB("ddoc-magadh")
 
-func connectDB() *mongo.Database {
+func connectDB(name string) *mongo.Database {
 	if err := godotenv.Load(); err != nil {
 		log.Println("Error loading .env file")
 	}
@@ -50,6 +51,11 @@ func connectDB() *mongo.Database {
 	}
 
 	db := client.Database(dbName)
+
+	if name != "" {
+		db = client.Database(name)
+		return db
+	}
 
 	return db
 
