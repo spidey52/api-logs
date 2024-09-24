@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log_manager/config"
+	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -17,6 +18,10 @@ var lock = &sync.Mutex{}
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 var connections = make(map[*websocket.Conn]bool)
@@ -38,6 +43,16 @@ func removeConnection(conn *websocket.Conn) {
 func CryptoStreamHandler(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
+
+		message := gin.H{
+			"error": "Error in upgrading connection",
+			"msg":   err.Error(),
+		}
+
+		fmt.Println("Error in upgrading connection")
+
+		c.JSON(400, message)
+
 		return
 	}
 
@@ -50,7 +65,16 @@ func CryptoStreamHandler(c *gin.Context) {
 	for {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
+
+			message := gin.H{
+				"error": "Error in reading message",
+				"msg":   err.Error(),
+			}
+
+			c.JSON(400, message)
+
 			return
+
 		}
 
 		if !isActive {
