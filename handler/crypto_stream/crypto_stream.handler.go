@@ -112,7 +112,7 @@ type TickerData struct {
 func getTickerDetailsFromRedis(ticker []string) []TickerData {
 
 	// Implement Redis logic here
-	vals := config.DefaultRedis().HMGet(context.TODO(), "satyam-coins", ticker...)
+	vals := config.DefaultRedis().HMGet(context.TODO(), "SATYAM:satyam-coins", ticker...)
 	result := vals.Val()
 
 	tickerResult := []TickerData{}

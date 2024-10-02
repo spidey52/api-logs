@@ -178,6 +178,7 @@ type User struct {
 	CpCode  string             `bson:"cp_code" json:"cp_code"`
 	Name    string             `bson:"name" json:"name"`
 	EmpType string             `bson:"emp_type" json:"emp_type"`
+	Phone   string             `bson:"phone" json:"phone"`
 }
 
 var cachedUsers []User = []User{}
@@ -197,6 +198,7 @@ func UserSelector(c *gin.Context) {
 		"cp_code":  1,
 		"name":     1,
 		"emp_type": 1,
+		"phone":    1,
 	})
 
 	users, err := utils.UserModel.FindAll(bson.M{}, options)
@@ -221,6 +223,7 @@ func UserSelector(c *gin.Context) {
 			CpCode:  user["cp_code"].(string),
 			Name:    user["name"].(string),
 			EmpType: user["emp_type"].(string),
+			Phone:   user["phone"].(string),
 		})
 
 	}
