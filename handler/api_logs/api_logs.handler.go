@@ -3,9 +3,9 @@ package api_logs_handler
 import (
 	"cmp"
 	"context"
-	"fmt"
 	"log_manager/utils"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -39,21 +39,40 @@ func GetApiLogs(c *gin.Context) {
 	sortKey := cmp.Or(c.Query("sortKey"), c.Query("sortBy"), "createdAt")
 	userId := c.Query("userId")
 	baseUrl := c.Query("baseUrl")
-	// sortValue := c.Query("sortValue")
+	sortValue := c.Query("sortValue")
 
 	filter := bson.M{}
 
 	if status != "" {
-		statusInt, err := strconv.Atoi(status)
-		if err != nil {
-			fmt.Println("Error in parsing status")
+		multiStatus := strings.Split(status, ",")
+
+		statusIntArr := []int{}
+
+		for _, status := range multiStatus {
+			statusInt, err := strconv.Atoi(status)
+
+			if err != nil {
+				c.IndentedJSON(400, gin.H{
+					"message": "Invalid status, please provide a valid status",
+				})
+				return
+			}
+
+			statusIntArr = append(statusIntArr, statusInt)
 		}
 
-		filter["status"] = statusInt
+		if len(statusIntArr) > 0 {
+			filter["status"] = bson.M{"$in": statusIntArr}
+		}
 	}
 
 	if method != "" {
-		filter["method"] = method
+		multiStatus := strings.Split(method, ",")
+
+		if len(multiStatus) > 0 {
+			filter["method"] = bson.M{"$in": multiStatus}
+		}
+
 	}
 
 	if userId != "" {
@@ -82,7 +101,13 @@ func GetApiLogs(c *gin.Context) {
 
 	options := utils.GetPaginatedOptions(paginationData, nil)
 
-	options.SetSort(bson.M{sortKey: -1})
+	sortValueInt := -1
+
+	if sortValue == "asc" || sortValue == "1" {
+		sortValueInt = 1
+	}
+
+	options.SetSort(bson.M{sortKey: sortValueInt})
 
 	options.SetProjection(bson.M{
 		"baseUrl":   1,
@@ -237,17 +262,17 @@ func UserSelector(c *gin.Context) {
 
 func GetUrlsForFilter(c *gin.Context) {
 
-	result, err := utils.ApiLogModel.Distinct(context.Background(), "baseUrl", bson.M{})
+	// result, err := utils.ApiLogModel.Distinct(context.Background(), "baseUrl", bson.M{})
 
-	if err != nil {
-		c.IndentedJSON(500, gin.H{
-			"message": "Error in getting the urls\n" + err.Error(),
-		})
-		return
-	}
+	// if err != nil {
+	// 	c.IndentedJSON(500, gin.H{
+	// 		"message": "Error in getting the urls\n" + err.Error(),
+	// 	})
+	// 	return
+	// }
 
 	c.IndentedJSON(200, gin.H{
-		"urls": result,
+		"urls": []string{},
 	})
 
 }

@@ -20,8 +20,7 @@ func init() {
 }
 
 func main() {
-	gin.SetMode(gin.ReleaseMode)
-
+	// gin.SetMode(gin.ReleaseMode)
 	// go cryptostream.BroadcastMessage()
 
 	r := gin.Default()
@@ -58,5 +57,5 @@ func main() {
 	r.GET("/crypto-stream", cryptostream.CryptoStreamHandler)
 
 	fmt.Println("Server is running on port 8080")
-	r.Run(":8080") // listen and serve on
+	r.Run(":8082") // listen and serve on
 }
