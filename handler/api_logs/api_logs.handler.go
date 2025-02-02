@@ -40,6 +40,7 @@ func GetApiLogs(c *gin.Context) {
 	userId := c.Query("userId")
 	baseUrl := c.Query("baseUrl")
 	sortValue := c.Query("sortValue")
+	server := c.Query("server")
 
 	filter := bson.M{}
 
@@ -73,6 +74,10 @@ func GetApiLogs(c *gin.Context) {
 			filter["method"] = bson.M{"$in": multiStatus}
 		}
 
+	}
+
+	if server != "" {
+		filter["server"] = server
 	}
 
 	if userId != "" {
