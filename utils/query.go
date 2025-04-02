@@ -93,10 +93,14 @@ func GetQueryData(c *gin.Context) QueryData {
 			fmt.Println("Error in parsing end date")
 		}
 
-		queryData.EndDate = queryData.EndDate.Add(time.Hour * 23)
-		queryData.EndDate = queryData.EndDate.Add(time.Minute * 59)
-		queryData.EndDate = queryData.EndDate.Add(time.Second * 59)
-		queryData.EndDate = queryData.EndDate.Add(time.Millisecond * 999)
+		if queryData.EndDate.Hour() == 0 && queryData.EndDate.Minute() == 0 && queryData.EndDate.Second() == 0 {
+
+			queryData.EndDate = queryData.EndDate.Add(time.Hour * 23)
+			queryData.EndDate = queryData.EndDate.Add(time.Minute * 59)
+			queryData.EndDate = queryData.EndDate.Add(time.Second * 59)
+			queryData.EndDate = queryData.EndDate.Add(time.Millisecond * 999)
+
+		}
 
 		fmt.Println(queryData.EndDate)
 		fmt.Println(queryData.StartDate)
