@@ -41,6 +41,7 @@ func GetApiLogs(c *gin.Context) {
 	baseUrl := c.Query("baseUrl")
 	sortValue := c.Query("sortValue")
 	server := c.Query("server")
+	duration := c.Query("duration") // "key:gte:value"
 
 	filter := bson.M{}
 
@@ -102,6 +103,28 @@ func GetApiLogs(c *gin.Context) {
 
 	if !paginationData.StartDate.IsZero() && !paginationData.EndDate.IsZero() {
 		filter["createdAt"] = bson.M{"$gte": paginationData.StartDate, "$lte": paginationData.EndDate}
+	}
+
+	if duration != "" {
+		// Parse the duration string
+		durationParts := strings.Split(duration, ":")
+		if len(durationParts) != 3 {
+			c.IndentedJSON(400, gin.H{
+				"message": "Invalid duration format, expected 'duration:gte:value'",
+			})
+			return
+		}
+
+		operator := durationParts[1]
+		value, err := strconv.Atoi(durationParts[2])
+		if err != nil {
+			c.IndentedJSON(400, gin.H{
+				"message": "Invalid duration value, please provide a valid integer",
+			})
+			return
+		}
+
+		filter["duration"] = bson.M{operator: value}
 	}
 
 	options := utils.GetPaginatedOptions(paginationData, nil)
