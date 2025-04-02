@@ -18,6 +18,24 @@ type QueryData struct {
 	EndDate   time.Time
 }
 
+func ParseDate(date string) (time.Time, error) {
+	layouts := []string{
+		"2006-01-02 15:04:05",
+		"2006-01-02 15:04",
+		"2006-01-02",
+	}
+
+	for _, layout := range layouts {
+		t, err := time.ParseInLocation(layout, date, time.Local)
+		if err == nil {
+			return t, nil
+		}
+	}
+
+	return time.Time{}, fmt.Errorf("unable to parse date: %s", date)
+
+}
+
 func GetQueryData(c *gin.Context) QueryData {
 	var queryData = QueryData{
 		Limit:  10,
@@ -59,7 +77,7 @@ func GetQueryData(c *gin.Context) QueryData {
 	endDate := c.Query("endDate")
 
 	if startDate != "" {
-		queryData.StartDate, err = time.ParseInLocation("2006-01-02", startDate, time.Local)
+		queryData.StartDate, err = ParseDate(startDate)
 
 		if err != nil {
 			fmt.Println("Error in parsing start date")
@@ -69,7 +87,7 @@ func GetQueryData(c *gin.Context) QueryData {
 
 	if endDate != "" {
 		// queryData.EndDate, err = time.Parse("2006-01-02", endDate)
-		queryData.EndDate, err = time.ParseInLocation("2006-01-02", endDate, time.Local)
+		queryData.EndDate, err = ParseDate(endDate)
 
 		if err != nil {
 			fmt.Println("Error in parsing end date")
