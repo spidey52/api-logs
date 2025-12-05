@@ -87,7 +87,7 @@ func NewExporter(config ExporterConfig) *Exporter {
 		config.Environment = EnvProduction
 	}
 	if config.BaseURL == "" {
-		config.BaseURL = "https://api-logs.yourdomain.com"
+		config.BaseURL = "http://localhost:8080"
 	}
 	if config.BatchSize <= 0 {
 		config.BatchSize = 100
@@ -215,7 +215,14 @@ func (e *Exporter) autoFlush() {
 	for {
 		select {
 		case <-e.ticker.C:
-			e.Flush()
+			res, err := e.Flush()
+
+			if err != nil {
+				fmt.Println("Auto-flush error:", err)
+			} else if res != nil {
+				fmt.Printf("Auto-flush: Sent %d logs (%d succeeded, %d failed)\n", res.Total, res.SuccessCount, res.FailedCount)
+			}
+
 		case <-e.done:
 			return
 		}

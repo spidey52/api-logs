@@ -107,7 +107,7 @@ func (r *userRepository) List(ctx context.Context, page, pageSize int) ([]*domai
 	}
 	defer cursor.Close(ctx)
 
-	var users []*domain.User
+	var users = []*domain.User{}
 	for cursor.Next(ctx) {
 		var doc userDocument
 		if err := cursor.Decode(&doc); err != nil {
@@ -123,7 +123,7 @@ func (r *userRepository) List(ctx context.Context, page, pageSize int) ([]*domai
 	// Get total count
 	total, err := r.collection.CountDocuments(ctx, bson.M{})
 	if err != nil {
-		return nil, 0, err
+		return users, 0, err
 	}
 
 	return users, int(total), nil

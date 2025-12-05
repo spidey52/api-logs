@@ -81,7 +81,7 @@ func main() {
 
 	router := gin.New()
 	router.Use(gin.Recovery())
-	router.Use(ginLogger())
+	router.Use(gin.Logger())
 	router.Use(corsMiddleware())
 
 	// Setup routes
