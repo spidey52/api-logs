@@ -1,0 +1,9 @@
+extends:
+ - recommended
+
+rules:
+ security-defined: warn # Change from error to warning since some endpoints are intentionally public
+ operation-operationId: warn
+ operation-4xx-response: off # Turn off - not all operations need 4xx examples
+ info-license: off # Turn off - license is optional
+ no-server-example.com: off # Allow localhost for development

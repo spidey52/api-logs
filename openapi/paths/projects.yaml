@@ -1,0 +1,159 @@
+/api/v1/projects:
+ post:
+  summary: Create project
+  description: Create a new project with an auto-generated API key
+  tags:
+   - Projects
+  security: []
+  requestBody:
+   required: true
+   content:
+    application/json:
+     schema:
+      $ref: "../components/schemas/project.yaml#/CreateProjectRequest"
+  responses:
+   "201":
+    description: Project created successfully
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/project.yaml#/Project"
+   "400":
+    description: Invalid request
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+ get:
+  summary: List projects
+  description: Get a paginated list of all projects
+  tags:
+   - Projects
+  security: []
+  parameters:
+   - $ref: "../components/parameters/pagination.yaml#/PageParam"
+   - $ref: "../components/parameters/pagination.yaml#/PageSizeParam"
+  responses:
+   "200":
+    description: List of projects
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/PaginatedProjects"
+
+/api/v1/projects/{id}:
+ get:
+  summary: Get project
+  description: Get a project by ID
+  tags:
+   - Projects
+  security: []
+  parameters:
+   - name: id
+     in: path
+     required: true
+     description: Project ID
+     schema:
+      type: string
+      format: uuid
+  responses:
+   "200":
+    description: Project details
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/project.yaml#/Project"
+   "404":
+    description: Project not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+ put:
+  summary: Update project
+  description: Update project name or description
+  tags:
+   - Projects
+  security: []
+  parameters:
+   - name: id
+     in: path
+     required: true
+     description: Project ID
+     schema:
+      type: string
+      format: uuid
+  requestBody:
+   required: true
+   content:
+    application/json:
+     schema:
+      $ref: "../components/schemas/project.yaml#/UpdateProjectRequest"
+  responses:
+   "200":
+    description: Project updated successfully
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/project.yaml#/Project"
+   "404":
+    description: Project not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+ delete:
+  summary: Delete project
+  description: Delete a project (be careful, this cannot be undone)
+  tags:
+   - Projects
+  security: []
+  parameters:
+   - name: id
+     in: path
+     required: true
+     description: Project ID
+     schema:
+      type: string
+      format: uuid
+  responses:
+   "204":
+    description: Project deleted successfully
+   "404":
+    description: Project not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+/api/v1/projects/{id}/regenerate-key:
+ post:
+  summary: Regenerate API key
+  description: Generate a new API key for the project (old key will be invalidated)
+  tags:
+   - Projects
+  security: []
+  parameters:
+   - name: id
+     in: path
+     required: true
+     description: Project ID
+     schema:
+      type: string
+      format: uuid
+  responses:
+   "200":
+    description: New API key generated
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/project.yaml#/Project"
+   "404":
+    description: Project not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"

@@ -1,0 +1,14 @@
+/health:
+ get:
+  summary: Health check
+  description: Check if the service is healthy and running
+  tags:
+   - Health
+  security: []
+  responses:
+   "200":
+    description: Service is healthy
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/HealthResponse"

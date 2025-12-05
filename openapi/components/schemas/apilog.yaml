@@ -1,0 +1,242 @@
+APILog:
+ type: object
+ properties:
+  id:
+   type: string
+   format: uuid
+   description: Unique log identifier
+   examples:
+    - "789e0123-e45b-67d8-a901-234567890abc"
+  project_id:
+   type: string
+   format: uuid
+   description: Associated project ID
+  user_id:
+   anyOf:
+    - type: string
+      format: uuid
+    - type: "null"
+   description: User who made the request (optional)
+  environment:
+   type: string
+   enum: [development, production]
+   description: Environment where request was made
+  method:
+   type: string
+   description: HTTP method
+   examples:
+    - "POST"
+  path:
+   type: string
+   description: Request path
+   examples:
+    - "/api/v1/users"
+  status_code:
+   type: integer
+   description: HTTP status code
+   examples:
+    - 201
+  duration_ms:
+   type: integer
+   description: Request duration in milliseconds
+   examples:
+    - 45
+  has_headers:
+   type: boolean
+   description: Whether headers are stored
+  has_request_body:
+   type: boolean
+   description: Whether request body is stored
+  has_response_body:
+   type: boolean
+   description: Whether response body is stored
+  timestamp:
+   type: string
+   format: date-time
+   description: Request timestamp
+  created_at:
+   type: string
+   format: date-time
+   description: Log creation timestamp
+
+CreateLogRequest:
+ type: object
+ required:
+  - method
+  - path
+  - status_code
+ properties:
+  user_id:
+   anyOf:
+    - type: string
+      format: uuid
+    - type: "null"
+   description: User who made the request (optional)
+  method:
+   type: string
+   examples:
+    - "POST"
+  path:
+   type: string
+   examples:
+    - "/api/v1/users"
+  status_code:
+   type: integer
+   examples:
+    - 201
+  duration_ms:
+   anyOf:
+    - type: integer
+    - type: "null"
+   examples:
+    - 45
+  timestamp:
+   anyOf:
+    - type: string
+      format: date-time
+    - type: "null"
+   description: Request timestamp (defaults to now)
+  request_headers:
+   anyOf:
+    - type: object
+      additionalProperties:
+       type: array
+       items:
+        type: string
+    - type: "null"
+   description: Request headers (optional)
+   examples:
+    - Content-Type: ["application/json"]
+      Authorization: ["Bearer token"]
+  response_headers:
+   anyOf:
+    - type: object
+      additionalProperties:
+       type: array
+       items:
+        type: string
+    - type: "null"
+   description: Response headers (optional)
+  request_body:
+   anyOf:
+    - type: string
+    - type: "null"
+   description: Request body (optional)
+   examples:
+    - '{"name": "John Doe"}'
+  response_body:
+   anyOf:
+    - type: string
+    - type: "null"
+   description: Response body (optional)
+   examples:
+    - '{"id": "123", "name": "John Doe"}'
+
+APILogWithDetails:
+ allOf:
+  - $ref: "./apilog.yaml#/APILog"
+  - type: object
+    properties:
+     request_headers:
+      anyOf:
+       - type: object
+         additionalProperties:
+          type: array
+          items:
+           type: string
+       - type: "null"
+     response_headers:
+      anyOf:
+       - type: object
+         additionalProperties:
+          type: array
+          items:
+           type: string
+       - type: "null"
+     request_body:
+      anyOf:
+       - type: string
+       - type: "null"
+     response_body:
+      anyOf:
+       - type: string
+       - type: "null"
+
+APILogHeaders:
+ type: object
+ properties:
+  log_id:
+   type: string
+   format: uuid
+  request_headers:
+   anyOf:
+    - type: object
+      additionalProperties:
+       type: array
+       items:
+        type: string
+    - type: "null"
+  response_headers:
+   anyOf:
+    - type: object
+      additionalProperties:
+       type: array
+       items:
+        type: string
+    - type: "null"
+  created_at:
+   type: string
+   format: date-time
+
+APILogBody:
+ type: object
+ properties:
+  log_id:
+   type: string
+   format: uuid
+  request_body:
+   anyOf:
+    - type: string
+    - type: "null"
+  response_body:
+   anyOf:
+    - type: string
+    - type: "null"
+  created_at:
+   type: string
+   format: date-time
+
+LogStats:
+ type: object
+ properties:
+  total:
+   type: integer
+   description: Total number of logs
+   examples:
+    - 12500
+  by_status:
+   type: object
+   additionalProperties:
+    type: integer
+   description: Count by status code
+   examples:
+    - "200": 10000
+      "201": 2000
+      "400": 300
+      "500": 200
+  by_method:
+   type: object
+   additionalProperties:
+    type: integer
+   description: Count by HTTP method
+   examples:
+    - "GET": 8000
+      "POST": 3000
+      "PUT": 1000
+      "DELETE": 500
+  avg_duration_ms:
+   type: number
+   format: float
+   description: Average request duration
+   examples:
+    - 123.45

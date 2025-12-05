@@ -1,0 +1,164 @@
+/api/v1/users:
+ post:
+  summary: Create user
+  description: Create a new user for tracking API calls
+  tags:
+   - Users
+  security: []
+  requestBody:
+   required: true
+   content:
+    application/json:
+     schema:
+      $ref: "../components/schemas/user.yaml#/CreateUserRequest"
+  responses:
+   "201":
+    description: User created successfully
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/user.yaml#/User"
+   "400":
+    description: Invalid request
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+   "409":
+    description: User with this identifier already exists
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+ get:
+  summary: List users
+  description: Get a paginated list of all users
+  tags:
+   - Users
+  security: []
+  parameters:
+   - $ref: "../components/parameters/pagination.yaml#/PageParam"
+   - $ref: "../components/parameters/pagination.yaml#/PageSizeParam"
+  responses:
+   "200":
+    description: List of users
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/PaginatedUsers"
+
+/api/v1/users/by-identifier:
+ get:
+  summary: Get user by identifier
+  description: Find a user by their unique identifier
+  tags:
+   - Users
+  security: []
+  parameters:
+   - name: identifier
+     in: query
+     required: true
+     description: User identifier
+     schema:
+      type: string
+  responses:
+   "200":
+    description: User details
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/user.yaml#/User"
+   "404":
+    description: User not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+/api/v1/users/{id}:
+ get:
+  summary: Get user
+  description: Get a user by ID
+  tags:
+   - Users
+  security: []
+  parameters:
+   - name: id
+     in: path
+     required: true
+     description: User ID
+     schema:
+      type: string
+      format: uuid
+  responses:
+   "200":
+    description: User details
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/user.yaml#/User"
+   "404":
+    description: User not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+ put:
+  summary: Update user
+  description: Update user details
+  tags:
+   - Users
+  security: []
+  parameters:
+   - name: id
+     in: path
+     required: true
+     description: User ID
+     schema:
+      type: string
+      format: uuid
+  requestBody:
+   required: true
+   content:
+    application/json:
+     schema:
+      $ref: "../components/schemas/user.yaml#/UpdateUserRequest"
+  responses:
+   "200":
+    description: User updated successfully
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/user.yaml#/User"
+   "404":
+    description: User not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+ delete:
+  summary: Delete user
+  description: Delete a user
+  tags:
+   - Users
+  security: []
+  parameters:
+   - name: id
+     in: path
+     required: true
+     description: User ID
+     schema:
+      type: string
+      format: uuid
+  responses:
+   "204":
+    description: User deleted successfully
+   "404":
+    description: User not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"

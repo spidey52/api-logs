@@ -1,0 +1,82 @@
+Error:
+ type: object
+ properties:
+  error:
+   type: string
+   description: Error message
+   examples:
+    - "Invalid request parameters"
+
+HealthResponse:
+ type: object
+ properties:
+  status:
+   type: string
+   examples:
+    - "healthy"
+  timestamp:
+   type: string
+   format: date-time
+
+PaginatedLogs:
+ type: object
+ properties:
+  data:
+   type: array
+   items:
+    $ref: "./apilog.yaml#/APILog"
+  total:
+   type: integer
+   description: Total number of logs matching filters
+   examples:
+    - 1000
+  page:
+   type: integer
+   description: Current page number
+   examples:
+    - 1
+  page_size:
+   type: integer
+   description: Number of items per page
+   examples:
+    - 50
+
+PaginatedProjects:
+ type: object
+ properties:
+  data:
+   type: array
+   items:
+    $ref: "./project.yaml#/Project"
+  total:
+   type: integer
+   examples:
+    - 10
+  page:
+   type: integer
+   examples:
+    - 1
+  page_size:
+   type: integer
+   examples:
+    - 20
+
+PaginatedUsers:
+ type: object
+ properties:
+  data:
+   type: array
+   items:
+    $ref: "./user.yaml#/User"
+  total:
+   type: integer
+   examples:
+    - 50
+  page:
+   type: integer
+   examples:
+    - 1
+  page_size:
+   type: integer
+   examples:
+    - 20

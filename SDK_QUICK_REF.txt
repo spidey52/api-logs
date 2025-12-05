@@ -1,0 +1,152 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     🚀 SDK QUICK REFERENCE                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+📦 WHAT'S INCLUDED
+──────────────────
+✅ TypeScript/JavaScript SDK (Express + Hono support)
+✅ Golang SDK (Gin support)
+✅ User auto-creation
+✅ Automatic batching & retry logic
+✅ Comprehensive documentation
+✅ Working examples
+
+🔧 PUBLISH TO NPM (TypeScript)
+────────────────────────────────
+cd sdk/typescript
+npm install
+npm run build
+# Edit package.json: change @your-org to your org name
+npm login
+npm publish --access public
+
+✅ Published to: https://www.npmjs.com/package/@your-org/api-logs-sdk
+📥 Users install: npm install @your-org/api-logs-sdk
+
+🔧 PUBLISH TO GO MODULES (Golang)
+───────────────────────────────────
+# Edit go.mod: change github.com/your-org to your repo
+git add sdk/golang/
+git commit -m "Add Golang SDK v1.0.0"
+git push
+git tag sdk/golang/v1.0.0
+git push origin sdk/golang/v1.0.0
+
+✅ Published via Git tag
+📥 Users install: go get github.com/your-org/api-logs/sdk/golang@v1.0.0
+
+💻 USAGE - TypeScript + Express
+─────────────────────────────────
+import { APILogsExporter, createExpressMiddleware } from "@your-org/api-logs-sdk";
+
+const exporter = new APILogsExporter({
+  apiKey: "your-api-key",
+  environment: "production",
+  createUsers: true,
+});
+
+app.use(createExpressMiddleware(exporter));
+
+💻 USAGE - TypeScript + Hono
+──────────────────────────────
+import { APILogsExporter, createHonoMiddleware } from "@your-org/api-logs-sdk";
+
+const exporter = new APILogsExporter({
+  apiKey: "your-api-key",
+  createUsers: true,
+});
+
+app.use("*", createHonoMiddleware({ exporter }));
+
+💻 USAGE - Golang + Gin
+─────────────────────────
+import apilog "github.com/your-org/api-logs/sdk/golang"
+
+exporter := apilog.NewExporter(apilog.ExporterConfig{
+    APIKey:      "your-api-key",
+    Environment: apilog.EnvProduction,
+    CreateUsers: true,
+})
+defer exporter.Shutdown()
+
+r.Use(apilog.GinMiddleware(exporter, apilog.GinMiddlewareOptions{}))
+
+📁 FILE STRUCTURE
+──────────────────
+sdk/
+├── typescript/
+│   ├── src/
+│   │   ├── index.ts (main exporter)
+│   │   ├── types.ts (TypeScript types)
+│   │   └── middleware/
+│   │       ├── express.ts
+│   │       └── hono.ts
+│   ├── examples/
+│   │   ├── basic.ts
+│   │   ├── express-app.ts
+│   │   └── hono-app.ts
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── README.md
+│   └── PUBLISHING.md
+│
+├── golang/
+│   ├── exporter.go (main exporter)
+│   ├── middleware.go (Gin middleware)
+│   ├── go.mod
+│   ├── examples/
+│   │   ├── basic/main.go
+│   │   └── gin-server/main.go
+│   └── README.md
+│
+├── README.md (SDK overview)
+└── PUBLISHING_QUICK_START.md
+
+⚙️ CONFIGURATION OPTIONS
+──────────────────────────
+apiKey          : Your project API key (required)
+environment     : "dev" | "production" (default: "production")
+baseURL         : API logs service URL
+batchSize       : Logs per batch (TypeScript: 10, Go: 100)
+flushInterval   : Auto-flush interval (TypeScript: 5s, Go: 10s)
+createUsers     : Auto-create users (default: true)
+maxRetries      : Max retry attempts (default: 3)
+retryDelay      : Initial retry delay (default: 1s)
+
+🎯 KEY FEATURES
+────────────────
+• Automatic Batching: Queue logs, send in batches
+• User Auto-Creation: Pass user_identifier, user created automatically
+• Retry Logic: Exponential backoff on failures
+• Framework Middleware: One-line setup
+• Type Safety: Full TypeScript support
+• Graceful Shutdown: Flush logs before exit
+
+📖 DOCUMENTATION
+─────────────────
+• SDK Overview: sdk/README.md
+• Publishing Guide: sdk/PUBLISHING_QUICK_START.md
+• TypeScript Details: sdk/typescript/README.md
+• Golang Details: sdk/golang/README.md
+• Complete Summary: SDK_COMPLETE.md
+
+✅ BEFORE PUBLISHING CHECKLIST
+────────────────────────────────
+TypeScript:
+□ Update package name in package.json
+□ Update author & repository URLs
+□ Run npm install && npm run build
+□ Test with npm link
+□ Login with npm login
+□ Publish with npm publish --access public
+
+Golang:
+□ Update module path in go.mod
+□ Update import paths in examples
+□ Commit & push changes
+□ Create tag: git tag sdk/golang/v1.0.0
+□ Push tag: git push origin sdk/golang/v1.0.0
+
+🎉 YOU'RE READY TO PUBLISH!
+────────────────────────────
+See SDK_COMPLETE.md for full instructions.

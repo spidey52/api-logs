@@ -1,0 +1,81 @@
+Project:
+ type: object
+ required:
+  - name
+  - environment
+ properties:
+  id:
+   type: string
+   format: uuid
+   description: Unique project identifier
+   examples:
+    - "550e8400-e29b-41d4-a716-446655440000"
+  name:
+   type: string
+   description: Project name
+   examples:
+    - "Production API"
+  description:
+   anyOf:
+    - type: string
+    - type: "null"
+   description: Project description
+   examples:
+    - "Main production API for web app"
+  api_key:
+   type: string
+   description: Generated API key
+   examples:
+    - "proj_1234567890abcdef"
+  environment:
+   type: string
+   enum: [development, production]
+   description: Project environment
+   examples:
+    - "production"
+  created_at:
+   type: string
+   format: date-time
+   description: Creation timestamp
+  updated_at:
+   type: string
+   format: date-time
+   description: Last update timestamp
+
+CreateProjectRequest:
+ type: object
+ required:
+  - name
+  - environment
+ properties:
+  name:
+   type: string
+   examples:
+    - "Production API"
+  description:
+   anyOf:
+    - type: string
+    - type: "null"
+   examples:
+    - "Main production API for web app"
+  environment:
+   type: string
+   enum: [development, production]
+   examples:
+    - "production"
+
+UpdateProjectRequest:
+ type: object
+ properties:
+  name:
+   anyOf:
+    - type: string
+    - type: "null"
+   examples:
+    - "Updated API Name"
+  description:
+   anyOf:
+    - type: string
+    - type: "null"
+   examples:
+    - "Updated description"

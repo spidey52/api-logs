@@ -1,0 +1,288 @@
+/api/v1/logs:
+ post:
+  summary: Create log
+  description: Log an API request/response with optional headers and bodies
+  tags:
+   - Logs
+  security:
+   - ApiKeyAuth: []
+  requestBody:
+   required: true
+   content:
+    application/json:
+     schema:
+      $ref: "../components/schemas/apilog.yaml#/CreateLogRequest"
+  responses:
+   "201":
+    description: Log created successfully
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/apilog.yaml#/APILog"
+   "400":
+    description: Invalid request
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+   "401":
+    description: Invalid or missing API key
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+ get:
+  summary: List logs
+  description: Get a paginated and filtered list of logs
+  tags:
+   - Logs
+  security:
+   - ApiKeyAuth: []
+  parameters:
+   - $ref: "../components/parameters/pagination.yaml#/PageParam"
+   - $ref: "../components/parameters/pagination.yaml#/PageSizeParam"
+   - name: method
+     in: query
+     description: Filter by HTTP method
+     schema:
+      type: string
+     examples:
+      default:
+       value: "GET"
+   - name: path
+     in: query
+     description: Filter by path (supports partial match)
+     schema:
+      type: string
+     examples:
+      default:
+       value: "/api/v1/users"
+   - name: status_code
+     in: query
+     description: Filter by status code
+     schema:
+      type: integer
+     examples:
+      default:
+       value: 200
+   - name: user_id
+     in: query
+     description: Filter by user ID
+     schema:
+      type: string
+      format: uuid
+   - name: from
+     in: query
+     description: Filter logs from this timestamp
+     schema:
+      type: string
+      format: date-time
+   - name: to
+     in: query
+     description: Filter logs until this timestamp
+     schema:
+      type: string
+      format: date-time
+   - name: min_duration
+     in: query
+     description: Filter by minimum duration (ms)
+     schema:
+      type: integer
+   - name: max_duration
+     in: query
+     description: Filter by maximum duration (ms)
+     schema:
+      type: integer
+  responses:
+   "200":
+    description: List of logs
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/PaginatedLogs"
+   "401":
+    description: Invalid or missing API key
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+/api/v1/logs/stats:
+ get:
+  summary: Get log statistics
+  description: Get aggregated statistics for logs
+  tags:
+   - Logs
+  security:
+   - ApiKeyAuth: []
+  parameters:
+   - name: from
+     in: query
+     description: Statistics from this timestamp
+     schema:
+      type: string
+      format: date-time
+   - name: to
+     in: query
+     description: Statistics until this timestamp
+     schema:
+      type: string
+      format: date-time
+  responses:
+   "200":
+    description: Log statistics
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/apilog.yaml#/LogStats"
+   "401":
+    description: Invalid or missing API key
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+/api/v1/logs/{id}:
+ get:
+  summary: Get log
+  description: Get a single log by ID (without headers/bodies)
+  tags:
+   - Logs
+  security:
+   - ApiKeyAuth: []
+  parameters:
+   - name: id
+     in: path
+     required: true
+     description: Log ID
+     schema:
+      type: string
+      format: uuid
+  responses:
+   "200":
+    description: Log details
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/apilog.yaml#/APILog"
+   "404":
+    description: Log not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+   "401":
+    description: Invalid or missing API key
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+/api/v1/logs/{id}/details:
+ get:
+  summary: Get log with full details
+  description: Get a log with all headers and bodies included
+  tags:
+   - Logs
+  security:
+   - ApiKeyAuth: []
+  parameters:
+   - name: id
+     in: path
+     required: true
+     description: Log ID
+     schema:
+      type: string
+      format: uuid
+  responses:
+   "200":
+    description: Full log details
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/apilog.yaml#/APILogWithDetails"
+   "404":
+    description: Log not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+   "401":
+    description: Invalid or missing API key
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+/api/v1/logs/{id}/headers:
+ get:
+  summary: Get log headers
+  description: Get request and response headers for a log
+  tags:
+   - Logs
+  security:
+   - ApiKeyAuth: []
+  parameters:
+   - name: id
+     in: path
+     required: true
+     description: Log ID
+     schema:
+      type: string
+      format: uuid
+  responses:
+   "200":
+    description: Log headers
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/apilog.yaml#/APILogHeaders"
+   "404":
+    description: Headers not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+   "401":
+    description: Invalid or missing API key
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+
+/api/v1/logs/{id}/body:
+ get:
+  summary: Get log bodies
+  description: Get request and response bodies for a log
+  tags:
+   - Logs
+  security:
+   - ApiKeyAuth: []
+  parameters:
+   - name: id
+     in: path
+     required: true
+     description: Log ID
+     schema:
+      type: string
+      format: uuid
+  responses:
+   "200":
+    description: Log bodies
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/apilog.yaml#/APILogBody"
+   "404":
+    description: Bodies not found
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"
+   "401":
+    description: Invalid or missing API key
+    content:
+     application/json:
+      schema:
+       $ref: "../components/schemas/common.yaml#/Error"

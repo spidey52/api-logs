@@ -1,0 +1,730 @@
+### API Logs Testing
+### Base URL
+@baseUrl = http://localhost:8080/api/v1
+@apiKey = 
+@environment = dev
+
+### Health Check
+GET {{baseUrl}}/health
+
+###############################################################################
+### PROJECT MANAGEMENT
+###############################################################################
+
+### 1. Create a new project (DEV)
+# @name createProjectDev
+POST {{baseUrl}}/projects
+Content-Type: application/json
+
+{
+  "name": "My Dev Project",
+  "description": "Development environment project",
+  "environment": "dev"
+}
+
+### 2. Get all projects
+GET {{baseUrl}}/projects
+
+###############################################################################
+### USER MANAGEMENT
+###############################################################################
+
+### 3. Create a new user
+# @name createUser
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "identifier": "EMP001",
+  "email": "john.doe@company.com",
+  "metadata": {
+    "department": "Engineering",
+    "role": "Senior Developer"
+  }
+}
+
+### 4. Get all users
+GET {{baseUrl}}/users
+
+### 5. Get user by ID
+@userId = <paste-user-id-here>
+GET {{baseUrl}}/users/{{userId}}
+
+### 6. Get user by identifier
+GET {{baseUrl}}/users/by-identifier?identifier=EMP001
+
+### 7. Update user
+PUT {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+{
+  "name": "John Doe Updated",
+  "identifier": "EMP001",
+  "email": "john.updated@company.com",
+  "metadata": {
+    "department": "Engineering",
+    "role": "Lead Developer"
+  }
+}
+
+### 8. Delete user
+DELETE {{baseUrl}}/users/{{userId}}
+
+###############################################################################
+### API LOGS (Using API Key from created project)
+###############################################################################
+
+### 9. Create API Log - Full (with user_id, headers, and body)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "POST",
+  "path": "/api/users",
+  "status_code": 201,
+  "response_time_ms": 145,
+  "ip_address": "192.168.1.100",
+  "user_agent": "Mozilla/5.0",
+  "user_id": "{{userId}}",
+  "request_headers": {
+    "content-type": "application/json",
+    "authorization": "Bearer token123"
+  },
+  "response_headers": {
+    "content-type": "application/json"
+  },
+  "request_body": {
+    "name": "Jane Smith",
+    "email": "jane@example.com"
+  },
+  "response_body": {
+    "id": "user-456",
+    "name": "Jane Smith",
+    "created_at": "2025-12-05T00:00:00Z"
+  }
+}
+
+### 10. Create API Log - Minimal (no user)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/products",
+  "status_code": 200,
+  "response_time_ms": 89
+}
+
+### 11. Create API Log - With error and user
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "POST",
+  "path": "/api/orders",
+  "status_code": 500,
+  "response_time_ms": 1250,
+  "error_message": "Database connection timeout",
+  "user_id": "{{userId}}"
+}
+
+### 12. Get all logs
+GET {{baseUrl}}/logs
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 13. Get specific log by ID
+@logId = <paste-log-id-here>
+GET {{baseUrl}}/logs/{{logId}}
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 14. Get log with all details
+GET {{baseUrl}}/logs/{{logId}}/details
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 15. Get log statistics
+GET {{baseUrl}}/logs/stats
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+###############################################################################
+### WORKFLOW EXAMPLE
+###############################################################################
+
+### STEP 1: Create a project
+POST {{baseUrl}}/projects
+Content-Type: application/json
+
+{
+  "name": "E-Commerce API",
+  "description": "Production e-commerce logs",
+  "environment": "production"
+}
+
+### STEP 2: Create users
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Alice Admin",
+  "identifier": "ADMIN001",
+  "email": "alice@ecommerce.com",
+  "metadata": {
+    "role": "Administrator",
+    "department": "IT"
+  }
+}
+
+###
+
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Bob Customer",
+  "identifier": "CUST001",
+  "email": "bob@customer.com",
+  "metadata": {
+    "role": "Customer",
+    "tier": "Premium"
+  }
+}
+
+### STEP 3: Create logs with user reference
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: <your-api-key-here>
+X-Environment: production
+
+{
+  "method": "POST",
+  "path": "/api/checkout",
+  "status_code": 200,
+  "response_time_ms": 234,
+  "user_id": "<alice-user-id>",
+  "request_body": {
+    "cart_id": "cart-123",
+    "payment_method": "credit_card"
+  },
+  "response_body": {
+    "order_id": "order-789",
+    "total": 299.99,
+    "status": "confirmed"
+  }
+}
+
+###############################################################################
+### NOTES
+###############################################################################
+#
+# SETUP INSTRUCTIONS:
+# 1. Start MongoDB: make docker-up
+# 2. Run the API: make run
+# 3. Create a project (request #1) and copy the api_key from response
+# 4. Update @apiKey variable at the top with your api_key
+# 5. Create a user (request #3) and copy the id from response
+# 6. Update @userId variable with your user id
+# 7. Run any request using VS Code REST Client extension
+#
+# USER MANAGEMENT:
+# - Users are stored independently in the users collection
+# - Users have: name, identifier (unique), email, and metadata
+# - API logs can optionally reference a user via user_id
+# - You can query users by ID or identifier
+#
+# API LOGS WITH USERS:
+# - user_id is optional in API log creation
+# - When provided, it creates a reference to the user
+# - Useful for tracking which user triggered which API call
+# - Can filter/search logs by user_id later
+#
+
+
+### 2. Create a new project (PROD)
+# @name createProjectProd
+POST {{baseUrl}}/projects
+Content-Type: application/json
+
+{
+  "name": "Production App",
+  "description": "Production environment logs",
+  "environment": "production"
+}
+
+### 3. Get all projects
+GET {{baseUrl}}/projects
+
+### 4. Get project by ID
+@projectId = <paste-project-id-here>
+GET {{baseUrl}}/projects/{{projectId}}
+
+### 5. Update project
+PUT {{baseUrl}}/projects/{{projectId}}
+Content-Type: application/json
+
+{
+  "name": "Updated Project Name",
+  "description": "Updated description"
+}
+
+### 6. Delete project
+DELETE {{baseUrl}}/projects/{{projectId}}
+
+###############################################################################
+### API LOGS (Using API Key from created project)
+###############################################################################
+
+### 7. Create API Log (Full - with headers and body)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "POST",
+  "path": "/api/users",
+  "status_code": 201,
+  "response_time_ms": 145,
+  "request_headers": {
+    "content-type": "application/json",
+    "authorization": "Bearer token123",
+    "user-agent": "Mozilla/5.0"
+  },
+  "response_headers": {
+    "content-type": "application/json",
+    "x-request-id": "req-123-456"
+  },
+  "request_body": {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "age": 30
+  },
+  "response_body": {
+    "id": "user-123",
+    "name": "John Doe",
+    "created_at": "2025-12-05T10:00:00Z"
+  }
+}
+
+### 8. Create API Log (Minimal - only core data)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/products",
+  "status_code": 200,
+  "response_time_ms": 89
+}
+
+### 9. Create API Log (With request body only)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "PUT",
+  "path": "/api/users/123",
+  "status_code": 200,
+  "response_time_ms": 120,
+  "request_body": {
+    "name": "Jane Doe",
+    "email": "jane@example.com"
+  }
+}
+
+### 10. Create API Log (Error response)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "POST",
+  "path": "/api/orders",
+  "status_code": 400,
+  "response_time_ms": 50,
+  "error_message": "Invalid input: missing required field 'quantity'",
+  "response_body": {
+    "error": "Validation failed",
+    "details": ["quantity is required", "price must be positive"]
+  }
+}
+
+### 11. Create API Log (500 Server Error)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/reports/monthly",
+  "status_code": 500,
+  "response_time_ms": 5000,
+  "error_message": "Database connection timeout",
+  "response_body": {
+    "error": "Internal Server Error",
+    "message": "Unable to connect to database"
+  }
+}
+
+### 12. List all logs
+GET {{baseUrl}}/logs
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 13. List logs with pagination
+GET {{baseUrl}}/logs?page=1&limit=10
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 14. List logs filtered by method
+GET {{baseUrl}}/logs?method=POST
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 15. List logs filtered by status code
+GET {{baseUrl}}/logs?status_code=200
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 16. List logs filtered by status code range
+GET {{baseUrl}}/logs?min_status=400&max_status=499
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 17. List logs filtered by path pattern
+GET {{baseUrl}}/logs?path=/api/users
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 18. Get specific log by ID
+@logId = <paste-log-id-here>
+GET {{baseUrl}}/logs/{{logId}}
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 19. Get log with all details (headers + body)
+GET {{baseUrl}}/logs/{{logId}}/details
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 20. Get log headers only
+GET {{baseUrl}}/logs/{{logId}}/headers
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 21. Get log body only
+GET {{baseUrl}}/logs/{{logId}}/body
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 22. Delete specific log
+DELETE {{baseUrl}}/logs/{{logId}}
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+### 23. Get log statistics
+GET {{baseUrl}}/logs/stats
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+###############################################################################
+### TESTING DIFFERENT HTTP METHODS
+###############################################################################
+
+### 24. Log GET request
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/users/123",
+  "status_code": 200,
+  "response_time_ms": 45
+}
+
+### 25. Log POST request
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "POST",
+  "path": "/api/users",
+  "status_code": 201,
+  "response_time_ms": 150
+}
+
+### 26. Log PUT request
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "PUT",
+  "path": "/api/users/123",
+  "status_code": 200,
+  "response_time_ms": 120
+}
+
+### 27. Log PATCH request
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "PATCH",
+  "path": "/api/users/123/status",
+  "status_code": 200,
+  "response_time_ms": 80
+}
+
+### 28. Log DELETE request
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "DELETE",
+  "path": "/api/users/123",
+  "status_code": 204,
+  "response_time_ms": 60
+}
+
+###############################################################################
+### ERROR SCENARIOS
+###############################################################################
+
+### 29. Missing API Key (should fail)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/test",
+  "status_code": 200,
+  "response_time_ms": 100
+}
+
+### 30. Invalid API Key (should fail)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: invalid_key_here
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/test",
+  "status_code": 200,
+  "response_time_ms": 100
+}
+
+### 31. Missing Environment Header (should fail)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+
+{
+  "method": "GET",
+  "path": "/api/test",
+  "status_code": 200,
+  "response_time_ms": 100
+}
+
+### 32. Wrong Environment (should fail)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: production
+
+{
+  "method": "GET",
+  "path": "/api/test",
+  "status_code": 200,
+  "response_time_ms": 100
+}
+
+### 33. Invalid JSON (should fail)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  invalid json here
+}
+
+###############################################################################
+### BULK TESTING - Create multiple logs quickly
+###############################################################################
+
+### 34. Bulk test - Success responses (200-299)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/dashboard",
+  "status_code": 200,
+  "response_time_ms": 234
+}
+
+###
+
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "POST",
+  "path": "/api/login",
+  "status_code": 200,
+  "response_time_ms": 456
+}
+
+###
+
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/profile",
+  "status_code": 200,
+  "response_time_ms": 123
+}
+
+### 35. Bulk test - Client errors (400-499)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "POST",
+  "path": "/api/users",
+  "status_code": 400,
+  "response_time_ms": 50,
+  "error_message": "Bad Request"
+}
+
+###
+
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/admin",
+  "status_code": 401,
+  "response_time_ms": 30,
+  "error_message": "Unauthorized"
+}
+
+###
+
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/secret",
+  "status_code": 403,
+  "response_time_ms": 25,
+  "error_message": "Forbidden"
+}
+
+###
+
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/notfound",
+  "status_code": 404,
+  "response_time_ms": 20,
+  "error_message": "Not Found"
+}
+
+### 36. Bulk test - Server errors (500-599)
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "GET",
+  "path": "/api/crash",
+  "status_code": 500,
+  "response_time_ms": 1500,
+  "error_message": "Internal Server Error"
+}
+
+###
+
+POST {{baseUrl}}/logs
+Content-Type: application/json
+X-API-Key: {{apiKey}}
+X-Environment: {{environment}}
+
+{
+  "method": "POST",
+  "path": "/api/process",
+  "status_code": 503,
+  "response_time_ms": 5000,
+  "error_message": "Service Unavailable"
+}
+
+###############################################################################
+### NOTES
+###############################################################################
+# 
+# SETUP INSTRUCTIONS:
+# 1. Start MongoDB: make docker-up
+# 2. Run the API: make run
+# 3. Create a project (request #1) and copy the api_key from response
+# 4. Update @apiKey variable at the top with your api_key
+# 5. Update @environment to match your project (dev or production)
+# 6. Run any request using VS Code REST Client extension
+#
+# TIPS:
+# - Use Ctrl+Alt+R (or Cmd+Alt+R on Mac) to send request
+# - ### separates different requests
+# - Variables use {{variableName}} syntax
+# - You can chain requests using @name and extracting values
+# - Copy IDs from responses and paste into @projectId and @logId variables
+#

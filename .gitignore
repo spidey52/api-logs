@@ -1,0 +1,48 @@
+# Binaries
+/cmd/api/api
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# Environment files
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite
+
+# Node modules
+node_modules/
+package-lock.json
+
+# Bundled OpenAPI spec (generated from openapi/ directory)
+/openapi.yaml

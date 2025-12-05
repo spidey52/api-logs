@@ -1,0 +1,26 @@
+PageParam:
+ name: page
+ in: query
+ description: Page number (starts from 1)
+ required: false
+ schema:
+  type: integer
+  minimum: 1
+  default: 1
+ examples:
+  default:
+   value: 1
+
+PageSizeParam:
+ name: page_size
+ in: query
+ description: Number of items per page
+ required: false
+ schema:
+  type: integer
+  minimum: 1
+  maximum: 100
+  default: 10
+ examples:
+  default:
+   value: 10

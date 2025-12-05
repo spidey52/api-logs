@@ -1,0 +1,99 @@
+User:
+ type: object
+ required:
+  - name
+  - identifier
+ properties:
+  id:
+   type: string
+   format: uuid
+   description: Unique user identifier
+   examples:
+    - "123e4567-e89b-12d3-a456-426614174000"
+  name:
+   type: string
+   description: User full name
+   examples:
+    - "John Doe"
+  identifier:
+   type: string
+   description: Unique identifier (username, employee ID, etc.)
+   examples:
+    - "john.doe"
+  email:
+   anyOf:
+    - type: string
+      format: email
+    - type: "null"
+   description: User email address
+   examples:
+    - "john.doe@example.com"
+  metadata:
+   anyOf:
+    - type: object
+      additionalProperties: true
+    - type: "null"
+   description: Additional user metadata
+   examples:
+    - { "department": "Engineering", "role": "Developer" }
+  created_at:
+   type: string
+   format: date-time
+   description: Creation timestamp
+  updated_at:
+   type: string
+   format: date-time
+   description: Last update timestamp
+
+CreateUserRequest:
+ type: object
+ required:
+  - name
+  - identifier
+ properties:
+  name:
+   type: string
+   examples:
+    - "John Doe"
+  identifier:
+   type: string
+   examples:
+    - "john.doe"
+  email:
+   anyOf:
+    - type: string
+      format: email
+    - type: "null"
+   examples:
+    - "john.doe@example.com"
+  metadata:
+   anyOf:
+    - type: object
+      additionalProperties: true
+    - type: "null"
+   examples:
+    - { "department": "Engineering" }
+
+UpdateUserRequest:
+ type: object
+ properties:
+  name:
+   anyOf:
+    - type: string
+    - type: "null"
+   examples:
+    - "Jane Doe"
+  email:
+   anyOf:
+    - type: string
+      format: email
+    - type: "null"
+   examples:
+    - "jane.doe@example.com"
+  metadata:
+   anyOf:
+    - type: object
+      additionalProperties: true
+    - type: "null"
+   examples:
+    - { "department": "Product" }
