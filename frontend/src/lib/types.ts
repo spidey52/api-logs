@@ -7,6 +7,7 @@ export interface Project {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  [key: string]: unknown;
 }
 
 export interface User {
@@ -17,6 +18,7 @@ export interface User {
   email?: string;
   createdAt: string;
   updatedAt: string;
+  [key: string]: unknown;
 }
 
 export interface APILog {
@@ -25,8 +27,10 @@ export interface APILog {
   environment: string;
   method: string;
   path: string;
+  query_params: Record<string, string>;
   status_code: number;
   response_time_ms: number;
+  content_length: number;
   ip_address: string;
   user_agent: string;
   has_headers: boolean;
@@ -42,6 +46,7 @@ export interface APILog {
   user_identifier?: string;
   created_at: string;
   updated_at: string;
+  [key: string]: unknown;
 
   // id: string;
   // projectId: string;
@@ -82,6 +87,7 @@ export interface LogFilters {
   projectId?: string;
   userId?: string;
   method?: string;
+  path?: string;
   statusCode?: number;
   environment?: string;
   startDate?: string;

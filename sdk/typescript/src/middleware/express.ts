@@ -55,12 +55,27 @@ export function createExpressMiddleware(exporter: APILogsExporter, options: Expr
 				userInfo = getUserInfo(req) || {};
 			}
 
+			// Parse query params into object
+			const queryParams: Record<string, string> = {};
+			Object.entries(req.query).forEach(([key, value]) => {
+				if (typeof value === "string") {
+					queryParams[key] = value;
+				} else if (Array.isArray(value) && value.length > 0 && typeof value[0] === "string") {
+					queryParams[key] = value[0] as string;
+				}
+			});
+
+			// Get content length (default to 0 if not set)
+			const contentLength = req.get("content-length") ? parseInt(req.get("content-length")!) : 0;
+
 			// Build log entry
 			const logEntry: APILogEntry = {
 				method: req.method as any,
 				path: req.path,
+				query_params: queryParams,
 				status_code: res.statusCode,
 				response_time_ms: responseTime,
+				content_length: contentLength,
 				ip_address: req.ip || req.socket?.remoteAddress,
 				user_agent: req.get("user-agent"),
 				user_id: userInfo.user_id,

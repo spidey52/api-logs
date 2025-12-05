@@ -26,20 +26,22 @@ func NewAPILogHandler(logService input.APILogService, projectService input.Proje
 
 // CreateLogRequest represents the request body for creating a log
 type CreateLogRequest struct {
-	Method          string         `json:"method" binding:"required"`
-	Path            string         `json:"path" binding:"required"`
-	StatusCode      int            `json:"status_code" binding:"required"`
-	ResponseTime    int64          `json:"response_time_ms"`
-	IPAddress       string         `json:"ip_address"`
-	UserAgent       string         `json:"user_agent"`
-	ErrorMessage    string         `json:"error_message"`
-	UserID          *string        `json:"user_id"`
-	UserName        string         `json:"user_name"`
-	UserIdentifier  string         `json:"user_identifier"`
-	RequestHeaders  map[string]any `json:"request_headers"`
-	ResponseHeaders map[string]any `json:"response_headers"`
-	RequestBody     map[string]any `json:"request_body"`
-	ResponseBody    map[string]any `json:"response_body"`
+	Method          string            `json:"method" binding:"required"`
+	Path            string            `json:"path" binding:"required"`
+	QueryParams     map[string]string `json:"query_params"`
+	StatusCode      int               `json:"status_code" binding:"required"`
+	ResponseTime    int64             `json:"response_time_ms"`
+	ContentLength   int64             `json:"content_length"`
+	IPAddress       string            `json:"ip_address"`
+	UserAgent       string            `json:"user_agent"`
+	ErrorMessage    string            `json:"error_message"`
+	UserID          *string           `json:"user_id"`
+	UserName        string            `json:"user_name"`
+	UserIdentifier  string            `json:"user_identifier"`
+	RequestHeaders  map[string]any    `json:"request_headers"`
+	ResponseHeaders map[string]any    `json:"response_headers"`
+	RequestBody     map[string]any    `json:"request_body"`
+	ResponseBody    map[string]any    `json:"response_body"`
 }
 
 // CreateBatchLogsRequest represents the request body for batch creating logs
@@ -108,16 +110,18 @@ func (h *APILogHandler) CreateLog(c *gin.Context) {
 
 	// Create core log
 	log := &domain.APILog{
-		ProjectID:    projectID.(string),
-		Environment:  domain.Environment(environment.(string)),
-		Method:       domain.HTTPMethod(req.Method),
-		Path:         req.Path,
-		StatusCode:   req.StatusCode,
-		ResponseTime: req.ResponseTime,
-		IPAddress:    req.IPAddress,
-		UserAgent:    req.UserAgent,
-		ErrorMessage: req.ErrorMessage,
-		UserID:       req.UserID,
+		ProjectID:     projectID.(string),
+		Environment:   domain.Environment(environment.(string)),
+		Method:        domain.HTTPMethod(req.Method),
+		Path:          req.Path,
+		QueryParams:   req.QueryParams,
+		StatusCode:    req.StatusCode,
+		ResponseTime:  req.ResponseTime,
+		ContentLength: req.ContentLength,
+		IPAddress:     req.IPAddress,
+		UserAgent:     req.UserAgent,
+		ErrorMessage:  req.ErrorMessage,
+		UserID:        req.UserID,
 	}
 
 	// If IP not provided, get from request
@@ -333,16 +337,18 @@ func (h *APILogHandler) CreateBatchLogs(c *gin.Context) {
 
 		// Create core log
 		log := &domain.APILog{
-			ProjectID:    projectID.(string),
-			Environment:  domain.Environment(environment.(string)),
-			Method:       domain.HTTPMethod(logReq.Method),
-			Path:         logReq.Path,
-			StatusCode:   logReq.StatusCode,
-			ResponseTime: logReq.ResponseTime,
-			IPAddress:    logReq.IPAddress,
-			UserAgent:    logReq.UserAgent,
-			ErrorMessage: logReq.ErrorMessage,
-			UserID:       userID,
+			ProjectID:     projectID.(string),
+			Environment:   domain.Environment(environment.(string)),
+			Method:        domain.HTTPMethod(logReq.Method),
+			Path:          logReq.Path,
+			QueryParams:   logReq.QueryParams,
+			StatusCode:    logReq.StatusCode,
+			ResponseTime:  logReq.ResponseTime,
+			ContentLength: logReq.ContentLength,
+			IPAddress:     logReq.IPAddress,
+			UserAgent:     logReq.UserAgent,
+			ErrorMessage:  logReq.ErrorMessage,
+			UserID:        userID,
 		}
 
 		// If IP not provided, get from request

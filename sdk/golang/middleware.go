@@ -110,12 +110,25 @@ func GinMiddleware(exporter *Exporter, options GinMiddlewareOptions) gin.Handler
 			errorMessage = c.Errors.String()
 		}
 
+		// Parse query params into map
+		queryParams := make(map[string]string)
+		for key, values := range c.Request.URL.Query() {
+			if len(values) > 0 {
+				queryParams[key] = values[0]
+			}
+		}
+
+		// Get content length (default to 0 if not set)
+		contentLength := max(c.Request.ContentLength, 0)
+
 		// Create log entry
 		logEntry := APILogEntry{
 			Method:          HTTPMethod(c.Request.Method),
 			Path:            c.Request.URL.Path,
+			QueryParams:     queryParams,
 			StatusCode:      c.Writer.Status(),
 			ResponseTimeMs:  responseTime,
+			ContentLength:   contentLength,
 			IPAddress:       c.ClientIP(),
 			UserAgent:       c.Request.UserAgent(),
 			UserID:          userInfo.UserID,

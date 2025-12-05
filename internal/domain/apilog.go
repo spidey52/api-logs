@@ -25,20 +25,22 @@ func (m HTTPMethod) String() string {
 
 // APILog represents the core API request log entry (lean table)
 type APILog struct {
-	ID           string      `json:"id"`
-	ProjectID    string      `json:"project_id"`
-	Environment  Environment `json:"environment"`
-	Method       HTTPMethod  `json:"method"`
-	Path         string      `json:"path"`
-	StatusCode   int         `json:"status_code"`
-	ResponseTime int64       `json:"response_time_ms"` // in milliseconds
-	IPAddress    string      `json:"ip_address"`
-	UserAgent    string      `json:"user_agent"`
-	ErrorMessage string      `json:"error_message,omitempty"`
-	HasHeaders   bool        `json:"has_headers"`
-	HasBody      bool        `json:"has_body"`
-	UserID       *string     `json:"user_id,omitempty"` // Optional reference to User
-	Timestamp    time.Time   `json:"timestamp"`
+	ID            string            `json:"id"`
+	ProjectID     string            `json:"project_id"`
+	Environment   Environment       `json:"environment"`
+	Method        HTTPMethod        `json:"method"`
+	Path          string            `json:"path"`
+	QueryParams   map[string]string `json:"query_params"` // URL query parameters
+	StatusCode    int               `json:"status_code"`
+	ResponseTime  int64             `json:"response_time_ms"` // in milliseconds
+	ContentLength int64             `json:"content_length"`
+	IPAddress     string            `json:"ip_address"`
+	UserAgent     string            `json:"user_agent"`
+	ErrorMessage  string            `json:"error_message,omitempty"`
+	HasHeaders    bool              `json:"has_headers"`
+	HasBody       bool              `json:"has_body"`
+	UserID        *string           `json:"user_id,omitempty"` // Optional reference to User
+	Timestamp     time.Time         `json:"timestamp"`
 }
 
 // Validate validates the API log entry

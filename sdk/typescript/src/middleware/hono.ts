@@ -78,6 +78,16 @@ export function createHonoMiddleware(options: HonoMiddlewareOptions): Middleware
 			userInfo = getUserInfo(c);
 		}
 
+		// Parse query params into object
+		const url = new URL(c.req.url);
+		const queryParams: Record<string, string> = {};
+		url.searchParams.forEach((value, key) => {
+			queryParams[key] = value;
+		});
+
+		// Get content length (default to 0 if not set)
+		const contentLength = c.req.header("content-length") ? parseInt(c.req.header("content-length")!) : 0;
+
 		// Create log entry
 		const logEntry: APILogEntry = {
 			method: method as any,
@@ -86,6 +96,8 @@ export function createHonoMiddleware(options: HonoMiddlewareOptions): Middleware
 			response_time_ms: responseTime,
 			ip_address: c.req.header("x-forwarded-for") || c.req.header("x-real-ip"),
 			user_agent: c.req.header("user-agent"),
+			query_params: queryParams,
+			content_length: contentLength,
 			...userInfo,
 			...(requestHeaders && { request_headers: requestHeaders }),
 			...(responseHeaders && { response_headers: responseHeaders }),

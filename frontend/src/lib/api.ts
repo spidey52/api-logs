@@ -1,4 +1,5 @@
 import axios from "axios";
+import { appStore, clearApiKey } from "../store/appStore";
 import type { APILog, LogFilters, PaginatedResponse, Project, User } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api/v1";
@@ -8,24 +9,43 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-
-  transformRequest: [
-    (data, headers) => {
-      // Attach API key from localStorage if available
-      const apiKey = localStorage.getItem("apiKey");
-      if (apiKey) {
-        headers["X-API-Key"] = apiKey;
-        // X - Environment
-        headers["X-Environment"] = apiKey.startsWith("dev_") ? "dev" : "production";
-      }
-
-      // if not available, proceed without it
-      localStorage.setItem("apiKey", "prod_38e7df59c0669e7ebee6a8d3052dbfdf");
-
-      return JSON.stringify(data);
-    },
-  ],
 });
+
+// Add request interceptor to attach API key from store
+api.interceptors.request.use((config) => {
+  const state = appStore.state;
+  if (state.apiKey) {
+    config.headers["X-API-Key"] = state.apiKey;
+    config.headers["X-Environment"] = state.environment;
+  }
+  return config;
+});
+
+// Store router reference for navigation
+let routerNavigate: ((opts: { to: string }) => void) | null = null;
+
+export const setRouterNavigate = (navigateFn: (opts: { to: string }) => void) => {
+  routerNavigate = navigateFn;
+};
+
+// Add response interceptor to handle 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear API key from store and localStorage
+      clearApiKey();
+
+      // Use router navigate if available, otherwise fall back to window.location
+      if (routerNavigate) {
+        routerNavigate({ to: "/setup" });
+      } else {
+        window.location.href = "/setup";
+      }
+    }
+    return Promise.reject(error);
+  },
+);
 
 // Re-export types
 export type { APILog, LogFilters, PaginatedResponse, Project, User };

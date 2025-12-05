@@ -33,8 +33,10 @@ const (
 type APILogEntry struct {
 	Method          HTTPMethod             `json:"method"`
 	Path            string                 `json:"path"`
+	QueryParams     map[string]string      `json:"query_params"`
 	StatusCode      int                    `json:"status_code"`
 	ResponseTimeMs  int64                  `json:"response_time_ms"`
+	ContentLength   int64                  `json:"content_length"`
 	IPAddress       string                 `json:"ip_address,omitempty"`
 	UserAgent       string                 `json:"user_agent,omitempty"`
 	UserID          string                 `json:"user_id,omitempty"`

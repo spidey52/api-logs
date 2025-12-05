@@ -22,20 +22,22 @@ type projectDocument struct {
 
 // apiLogDocument represents the MongoDB document for API logs
 type apiLogDocument struct {
-	ID           string    `bson:"_id"`
-	ProjectID    string    `bson:"project_id"`
-	Environment  string    `bson:"environment"`
-	Method       string    `bson:"method"`
-	Path         string    `bson:"path"`
-	StatusCode   int       `bson:"status_code"`
-	ResponseTime int64     `bson:"response_time_ms"`
-	IPAddress    string    `bson:"ip_address"`
-	UserAgent    string    `bson:"user_agent"`
-	ErrorMessage string    `bson:"error_message,omitempty"`
-	HasHeaders   bool      `bson:"has_headers"`
-	HasBody      bool      `bson:"has_body"`
-	UserID       *string   `bson:"user_id,omitempty"`
-	Timestamp    time.Time `bson:"timestamp"`
+	ID            string            `bson:"_id"`
+	ProjectID     string            `bson:"project_id"`
+	Environment   string            `bson:"environment"`
+	Method        string            `bson:"method"`
+	Path          string            `bson:"path"`
+	QueryParams   map[string]string `bson:"query_params"`
+	StatusCode    int               `bson:"status_code"`
+	ResponseTime  int64             `bson:"response_time_ms"`
+	ContentLength int64             `bson:"content_length"`
+	IPAddress     string            `bson:"ip_address"`
+	UserAgent     string            `bson:"user_agent"`
+	ErrorMessage  string            `bson:"error_message,omitempty"`
+	HasHeaders    bool              `bson:"has_headers"`
+	HasBody       bool              `bson:"has_body"`
+	UserID        *string           `bson:"user_id,omitempty"`
+	Timestamp     time.Time         `bson:"timestamp"`
 }
 
 // apiLogHeadersDocument represents the MongoDB document for headers
@@ -84,20 +86,22 @@ func projectToDocument(p *domain.Project) *projectDocument {
 
 func apiLogToDocument(log *domain.APILog) *apiLogDocument {
 	return &apiLogDocument{
-		ID:           log.ID,
-		ProjectID:    log.ProjectID,
-		Environment:  string(log.Environment),
-		Method:       string(log.Method),
-		Path:         log.Path,
-		StatusCode:   log.StatusCode,
-		ResponseTime: log.ResponseTime,
-		IPAddress:    log.IPAddress,
-		UserAgent:    log.UserAgent,
-		ErrorMessage: log.ErrorMessage,
-		HasHeaders:   log.HasHeaders,
-		HasBody:      log.HasBody,
-		UserID:       log.UserID,
-		Timestamp:    log.Timestamp,
+		ID:            log.ID,
+		ProjectID:     log.ProjectID,
+		Environment:   string(log.Environment),
+		Method:        string(log.Method),
+		Path:          log.Path,
+		QueryParams:   log.QueryParams,
+		StatusCode:    log.StatusCode,
+		ResponseTime:  log.ResponseTime,
+		ContentLength: log.ContentLength,
+		IPAddress:     log.IPAddress,
+		UserAgent:     log.UserAgent,
+		ErrorMessage:  log.ErrorMessage,
+		HasHeaders:    log.HasHeaders,
+		HasBody:       log.HasBody,
+		UserID:        log.UserID,
+		Timestamp:     log.Timestamp,
 	}
 }
 
@@ -148,20 +152,22 @@ func documentToProject(doc *projectDocument) *domain.Project {
 
 func documentToAPILog(doc *apiLogDocument) *domain.APILog {
 	return &domain.APILog{
-		ID:           doc.ID,
-		ProjectID:    doc.ProjectID,
-		Environment:  domain.Environment(doc.Environment),
-		Method:       domain.HTTPMethod(doc.Method),
-		Path:         doc.Path,
-		StatusCode:   doc.StatusCode,
-		ResponseTime: doc.ResponseTime,
-		IPAddress:    doc.IPAddress,
-		UserAgent:    doc.UserAgent,
-		ErrorMessage: doc.ErrorMessage,
-		HasHeaders:   doc.HasHeaders,
-		HasBody:      doc.HasBody,
-		UserID:       doc.UserID,
-		Timestamp:    doc.Timestamp,
+		ID:            doc.ID,
+		ProjectID:     doc.ProjectID,
+		Environment:   domain.Environment(doc.Environment),
+		Method:        domain.HTTPMethod(doc.Method),
+		Path:          doc.Path,
+		QueryParams:   doc.QueryParams,
+		StatusCode:    doc.StatusCode,
+		ResponseTime:  doc.ResponseTime,
+		ContentLength: doc.ContentLength,
+		IPAddress:     doc.IPAddress,
+		UserAgent:     doc.UserAgent,
+		ErrorMessage:  doc.ErrorMessage,
+		HasHeaders:    doc.HasHeaders,
+		HasBody:       doc.HasBody,
+		UserID:        doc.UserID,
+		Timestamp:     doc.Timestamp,
 	}
 }
 
