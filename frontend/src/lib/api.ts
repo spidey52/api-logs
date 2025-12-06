@@ -54,7 +54,7 @@ export type { APILog, LogFilters, PaginatedResponse, Project, User };
 export const projectsApi = {
   getAll: () => api.get<PaginatedResponse<Project>>("/projects"),
   getById: (id: string) => api.get<Project>(`/projects/${id}`),
-  create: (data: { name: string; description: string }) => api.post<Project>("/projects", data),
+  create: (data: { name: string; description: string; environment: string }) => api.post<Project>("/projects", data),
   update: (id: string, data: { name: string; description: string }) => api.put<Project>(`/projects/${id}`, data),
   delete: (id: string) => api.delete(`/projects/${id}`),
 };

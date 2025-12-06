@@ -1,5 +1,22 @@
-import { Add, Delete, Edit, Visibility } from "@mui/icons-material";
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Paper, TextField } from "@mui/material";
+import { Add, CheckCircle, ContentCopy, Delete, Edit, Visibility } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  IconButton,
+  Paper,
+  Radio,
+  RadioGroup,
+  TextField,
+  Tooltip,
+} from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
@@ -20,6 +37,8 @@ export default function ProjectsPage() {
  const [open, setOpen] = useState(false);
  const [name, setName] = useState("");
  const [description, setDescription] = useState("");
+ const [environment, setEnvironment] = useState<"dev" | "production">("dev");
+ const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
  // Default filter configurations
  const defaultVisibleFilters = ["name"];
@@ -62,6 +81,7 @@ export default function ProjectsPage() {
    setOpen(false);
    setName("");
    setDescription("");
+   setEnvironment("dev");
   },
  });
 
@@ -73,7 +93,7 @@ export default function ProjectsPage() {
  });
 
  const handleCreate = () => {
-  createMutation.mutate({ name, description });
+  createMutation.mutate({ name, description, environment });
  };
 
  // Filter projects based on filter values
@@ -132,8 +152,29 @@ export default function ProjectsPage() {
   {
    id: "api_key",
    label: "API Key",
-   minWidth: 150,
-   format: (value) => <Chip label={`${(value as string).substring(0, 12)}...`} size='small' variant='outlined' />,
+   minWidth: 200,
+   format: (value) => {
+    const isCopied = copiedKey === value;
+    return (
+     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Chip label={`${(value as string).substring(0, 12)}...`} size='small' variant='outlined' />
+      <Tooltip title={isCopied ? "Copied!" : "Copy API Key"}>
+       <IconButton
+        size='small'
+        color={isCopied ? "success" : "default"}
+        onClick={(e) => {
+         e.stopPropagation();
+         navigator.clipboard.writeText(value as string);
+         setCopiedKey(value as string);
+         setTimeout(() => setCopiedKey(null), 1000);
+        }}
+       >
+        {isCopied ? <CheckCircle fontSize='small' /> : <ContentCopy fontSize='small' />}
+       </IconButton>
+      </Tooltip>
+     </Box>
+    );
+   },
   },
   {
    id: "created_at",
@@ -196,6 +237,14 @@ export default function ProjectsPage() {
     <DialogContent>
      <TextField autoFocus margin='dense' label='Project Name' fullWidth value={name} onChange={(e) => setName(e.target.value)} />
      <TextField margin='dense' label='Description' fullWidth multiline rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
+
+     <FormControl component='fieldset' sx={{ mt: 2 }}>
+      <FormLabel component='legend'>Environment</FormLabel>
+      <RadioGroup row value={environment} onChange={(e) => setEnvironment(e.target.value as "dev" | "production")}>
+       <FormControlLabel value='dev' control={<Radio />} label='Development' />
+       <FormControlLabel value='production' control={<Radio />} label='Production' />
+      </RadioGroup>
+     </FormControl>
     </DialogContent>
     <DialogActions>
      <Button onClick={() => setOpen(false)}>Cancel</Button>
