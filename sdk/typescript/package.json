@@ -1,6 +1,6 @@
 {
 	"name": "@spidey52/api-logs-sdk",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "TypeScript/JavaScript SDK for API logging service with Express and Hono middleware support",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",

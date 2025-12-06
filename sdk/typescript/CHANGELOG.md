@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2025-12-07
+
+### Added
+
+- Path params (`params`) are now captured in Express middleware and sent in every log entry
+- TypeScript SDK: `APILogEntry` now includes a `params` field
+- Backend: Path params are stored and retrieved in MongoDB for every log
+
+### Changed
+
+- Route pattern logging improved: Express middleware now logs the full route pattern (e.g., `/api/v1/users/:id`) instead of the actual URL
+
+### Fixed
+
+- MongoDB mapping updated to persist and load path params for all logs
+
 ## [1.0.2] - 2025-12-06
 
 ### Added
