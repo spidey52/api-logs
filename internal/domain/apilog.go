@@ -30,6 +30,7 @@ type APILog struct {
 	Environment   Environment       `json:"environment"`
 	Method        HTTPMethod        `json:"method"`
 	Path          string            `json:"path"`
+	Params        map[string]string `json:"params"` // Path parameters
 	QueryParams   map[string]string `json:"query_params"` // URL query parameters
 	StatusCode    int               `json:"status_code"`
 	ResponseTime  int64             `json:"response_time_ms"` // in milliseconds

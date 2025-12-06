@@ -27,6 +27,7 @@ type apiLogDocument struct {
 	Environment   string            `bson:"environment"`
 	Method        string            `bson:"method"`
 	Path          string            `bson:"path"`
+	Params        map[string]string `bson:"params"`
 	QueryParams   map[string]string `bson:"query_params"`
 	StatusCode    int               `bson:"status_code"`
 	ResponseTime  int64             `bson:"response_time_ms"`
@@ -91,6 +92,7 @@ func apiLogToDocument(log *domain.APILog) *apiLogDocument {
 		Environment:   string(log.Environment),
 		Method:        string(log.Method),
 		Path:          log.Path,
+		Params:        log.Params,
 		QueryParams:   log.QueryParams,
 		StatusCode:    log.StatusCode,
 		ResponseTime:  log.ResponseTime,
@@ -157,6 +159,7 @@ func documentToAPILog(doc *apiLogDocument) *domain.APILog {
 		Environment:   domain.Environment(doc.Environment),
 		Method:        domain.HTTPMethod(doc.Method),
 		Path:          doc.Path,
+		Params:        doc.Params,
 		QueryParams:   doc.QueryParams,
 		StatusCode:    doc.StatusCode,
 		ResponseTime:  doc.ResponseTime,

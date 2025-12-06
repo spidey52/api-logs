@@ -32,6 +32,7 @@ func NewAPILogHandler(logService input.APILogService, projectService input.Proje
 type CreateLogRequest struct {
 	Method          string            `json:"method" binding:"required"`
 	Path            string            `json:"path" binding:"required"`
+	Params          map[string]string `json:"params"`
 	QueryParams     map[string]string `json:"query_params"`
 	StatusCode      int               `json:"status_code" binding:"required"`
 	ResponseTime    int64             `json:"response_time_ms"`
@@ -118,6 +119,7 @@ func (h *APILogHandler) CreateLog(c *gin.Context) {
 		Environment:   domain.Environment(environment.(string)),
 		Method:        domain.HTTPMethod(req.Method),
 		Path:          req.Path,
+		Params:        req.Params,
 		QueryParams:   req.QueryParams,
 		StatusCode:    req.StatusCode,
 		ResponseTime:  req.ResponseTime,
@@ -440,6 +442,7 @@ func (h *APILogHandler) CreateBatchLogs(c *gin.Context) {
 			Environment:   domain.Environment(environment.(string)),
 			Method:        domain.HTTPMethod(logReq.Method),
 			Path:          logReq.Path,
+			Params:        logReq.Params,
 			QueryParams:   logReq.QueryParams,
 			StatusCode:    logReq.StatusCode,
 			ResponseTime:  logReq.ResponseTime,

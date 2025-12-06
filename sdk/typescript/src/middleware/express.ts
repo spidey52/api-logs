@@ -84,6 +84,7 @@ export function createExpressMiddleware(exporter: APILogsExporter, options: Expr
 			const logEntry: APILogEntry = {
 				method: req.method as any,
 				path: req.baseUrl + (req.route?.path || req.path),
+				params: req.params,
 				query_params: queryParams,
 				status_code: res.statusCode,
 				response_time_ms: responseTime,

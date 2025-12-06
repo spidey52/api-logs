@@ -5,6 +5,7 @@ export type HTTPMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | 
 export interface APILogEntry {
 	method: HTTPMethod;
 	path: string;
+	params?: Record<string, string>;
 	query_params?: Record<string, string>;
 	status_code: number;
 	response_time_ms: number;
