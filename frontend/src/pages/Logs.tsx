@@ -6,11 +6,14 @@ import { useStore } from "@tanstack/react-store";
 import { useState } from "react";
 import DataTable, { type Column, type DataTableAction } from "../components/DataTable";
 import FilterToolbar, { type FilterConfig } from "../components/FilterToolbar";
+import DateFilter from "../components/filters/DateFilter";
+import DateRangeFilter from "../components/filters/DateRangeFilter";
+import StatusCodeRangeFilter from "../components/filters/StatusCodeRangeFilter";
 import { logsApi } from "../lib/api";
 import { getFilterValueFromUrl } from "../lib/filterUtils";
 import { formatters } from "../lib/formatters";
 import type { APILog, LogFilters } from "../lib/types";
-import { filterPreferencesStore, setFilterOrder, toggleFilterVisibility } from "../store/filterPreferencesStore";
+import { filterPreferencesStore, setFilterOrder, setFilterSize, toggleFilterVisibility } from "../store/filterPreferencesStore";
 
 const getMethodColor = (method: string) => {
  switch (method) {
@@ -36,7 +39,7 @@ export default function LogsPage() {
 
  // Default filter configurations
  const defaultVisibleFilters = ["method", "environment", "statusCode"];
- const defaultFilterOrder = ["method", "environment", "statusCode", "path", "projectId"];
+ const defaultFilterOrder = ["method", "environment", "statusCode", "date", "dateRange", "path", "projectId"];
 
  // Get filter preferences from store
  const filterPreferences = useStore(filterPreferencesStore);
@@ -49,7 +52,9 @@ export default function LogsPage() {
   limit: searchParams.limit ? parseInt(searchParams.limit) : 50,
   method: getFilterValueFromUrl(searchParams, "method", "text") as string | undefined,
   environment: getFilterValueFromUrl(searchParams, "environment", "text") as string | undefined,
-  statusCode: getFilterValueFromUrl(searchParams, "statusCode", "number") as number | undefined,
+  statusCode: getFilterValueFromUrl(searchParams, "statusCode", "text") as string | number | undefined,
+  date: getFilterValueFromUrl(searchParams, "date", "text") as string | undefined,
+  dateRange: getFilterValueFromUrl(searchParams, "dateRange", "text") as string | undefined,
   path: getFilterValueFromUrl(searchParams, "path", "text") as string | undefined,
   projectId: getFilterValueFromUrl(searchParams, "projectId", "text") as string | undefined,
  }));
@@ -61,6 +66,12 @@ export default function LogsPage() {
  const handleReorder = (newOrder: FilterConfig[]) => {
   const orderIds = newOrder.map((f) => f.id);
   setFilterOrder("logs", orderIds);
+ };
+
+ const handleSizeChange = (filterId: string, newSize: FilterConfig["size"]) => {
+  if (newSize) {
+   setFilterSize("logs", filterId, newSize);
+  }
  };
 
  const handleClearAll = () => {
@@ -114,7 +125,7 @@ export default function LogsPage() {
    ],
    onChange: (value) => setFilters({ ...filters, method: value as string }),
    visible: visibleFilters.includes("method"),
-   size: 2,
+   size: 1,
   },
   environment: {
    id: "environment",
@@ -128,16 +139,37 @@ export default function LogsPage() {
    ],
    onChange: (value) => setFilters({ ...filters, environment: value as string }),
    visible: visibleFilters.includes("environment"),
-   size: 2,
+   size: 1,
   },
   statusCode: {
    id: "statusCode",
    label: "Status Code",
-   type: "number",
+   type: "custom",
    value: filters.statusCode,
-   onChange: (value) => setFilters({ ...filters, statusCode: value as number }),
+   onChange: (value) => setFilters({ ...filters, statusCode: value as number | string }),
    visible: visibleFilters.includes("statusCode"),
-   size: 2,
+   size: 1.5,
+   customComponent: StatusCodeRangeFilter,
+  },
+  date: {
+   id: "date",
+   label: "Date",
+   type: "custom",
+   value: filters.date,
+   onChange: (value) => setFilters({ ...filters, date: value as string }),
+   visible: visibleFilters.includes("date"),
+   size: 1.5,
+   customComponent: DateFilter,
+  },
+  dateRange: {
+   id: "dateRange",
+   label: "Date Range",
+   type: "custom",
+   value: filters.dateRange,
+   onChange: (value) => setFilters({ ...filters, dateRange: value as string }),
+   visible: visibleFilters.includes("dateRange"),
+   size: 2.5,
+   customComponent: DateRangeFilter,
   },
   path: {
    id: "path",
@@ -146,7 +178,7 @@ export default function LogsPage() {
    value: filters.path,
    onChange: (value) => setFilters({ ...filters, path: value as string }),
    visible: visibleFilters.includes("path"),
-   size: 3,
+   size: 2,
   },
   projectId: {
    id: "projectId",
@@ -160,7 +192,19 @@ export default function LogsPage() {
  };
 
  // Order filters based on saved order
- const filterConfigs: FilterConfig[] = filterOrder.map((id) => filterConfigsMap[id]).filter(Boolean);
+ const filterConfigs: FilterConfig[] = filterOrder
+  .map((id) => {
+   const config = filterConfigsMap[id];
+   if (!config) return null;
+
+   // Apply custom size from store if available
+   const customSize = filterPreferences.filterSizes?.logs?.[id];
+   if (customSize !== undefined && customSize !== null) {
+    return { ...config, size: customSize as FilterConfig["size"] };
+   }
+   return config;
+  })
+  .filter(Boolean) as FilterConfig[];
 
  const columns: Column<APILog>[] = [
   {
@@ -212,7 +256,16 @@ export default function LogsPage() {
  return (
   <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
    <Paper sx={{ border: 1, borderColor: "divider", borderRadius: 1, flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-    <FilterToolbar title='API Logs' filters={filterConfigs} onVisibilityToggle={handleVisibilityToggle} onReorder={handleReorder} onClearAll={handleClearAll} maxToolbarUnits={12} urlPath='/logs' />
+    <FilterToolbar
+     title='API Logs'
+     filters={filterConfigs}
+     onVisibilityToggle={handleVisibilityToggle}
+     onReorder={handleReorder}
+     onSizeChange={handleSizeChange}
+     onClearAll={handleClearAll}
+     maxToolbarUnits={12}
+     urlPath='/logs'
+    />
 
     <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
      <DataTable

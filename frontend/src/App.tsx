@@ -1,6 +1,6 @@
 import { createTheme, CssBaseline, ThemeProvider, useMediaQuery } from "@mui/material";
 import { Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Layout from "./components/Layout";
 import { setRouterNavigate } from "./lib/api";
 import { setStoreNavigate } from "./store/appStore";
@@ -11,17 +11,21 @@ function App() {
  const isSetupPage = router.location.pathname === "/setup";
 
  // Detect system dark mode preference
- const prefersDarkMode = useMediaQuery("(prefers-color-scheme: light)");
+ const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+ const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system");
 
- // Create theme based on dark mode preference
+ // Determine actual theme mode
+ const actualMode = themeMode === "system" ? (prefersDarkMode ? "dark" : "light") : themeMode;
+
+ // Create theme based on mode
  const theme = useMemo(
   () =>
    createTheme({
     palette: {
-     mode: prefersDarkMode ? "dark" : "light",
+     mode: actualMode,
     },
    }),
-  [prefersDarkMode],
+  [actualMode],
  );
 
  // Set router navigate function for API interceptor and store
@@ -36,7 +40,7 @@ function App() {
    {isSetupPage ? (
     <Outlet />
    ) : (
-    <Layout>
+    <Layout themeMode={themeMode} onThemeChange={setThemeMode}>
      <Outlet />
     </Layout>
    )}

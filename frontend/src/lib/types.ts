@@ -88,10 +88,12 @@ export interface LogFilters {
   userId?: string;
   method?: string;
   path?: string;
-  statusCode?: number;
+  statusCode?: number | string; // Support range format like "400-499"
   environment?: string;
   startDate?: string;
   endDate?: string;
+  date?: string; // Format: "YYYY-MM-DD" (single date)
+  dateRange?: string; // Format: "YYYY-MM-DD|YYYY-MM-DD"
   page?: number;
   limit?: number;
 }

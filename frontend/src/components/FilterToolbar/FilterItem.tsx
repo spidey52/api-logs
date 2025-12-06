@@ -1,6 +1,6 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Box, FormControl, IconButton, InputLabel, MenuItem, Select, TextField, Tooltip } from "@mui/material";
-import type { FilterConfig } from "./FilterToolbar";
+import type { FilterConfig } from "./types";
 
 interface FilterItemProps {
  filter: FilterConfig;
@@ -13,6 +13,14 @@ interface FilterItemProps {
 function FilterItem({ filter, disabled = false, showVisibilityButton = false, onVisibilityToggle, size }: FilterItemProps) {
  const renderInput = () => {
   switch (filter.type) {
+   case "custom": {
+    if (!filter.customComponent) {
+     return <TextField fullWidth size='small' label={filter.label} disabled value='Custom component not provided' />;
+    }
+    const CustomComponent = filter.customComponent;
+    return <CustomComponent value={filter.value} onChange={filter.onChange} disabled={disabled} label={filter.label} />;
+   }
+
    case "select":
     return (
      <FormControl fullWidth size='small' disabled={disabled}>

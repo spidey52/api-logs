@@ -6,6 +6,50 @@ export interface PersistenceAdapter<T> {
 }
 
 /**
+ * Deep merge two objects, preserving arrays and adding new properties from source
+ * @param target - The target object (stored state)
+ * @param source - The source object (default state with new properties)
+ * @returns Merged object with all properties from both
+ */
+function deepMerge<T>(target: T, source: T): T {
+	if (!target || typeof target !== "object") return source;
+	if (!source || typeof source !== "object") return target;
+
+	const merged = { ...target };
+
+	for (const key in source) {
+		const targetValue = target[key];
+		const sourceValue = source[key];
+
+		// If source has a property that target doesn't, add it
+		if (!(key in target)) {
+			(merged as Record<string, unknown>)[key] = sourceValue;
+			continue;
+		}
+
+		// Handle arrays: merge arrays by combining unique values for string arrays
+		if (Array.isArray(sourceValue) && Array.isArray(targetValue)) {
+			// For arrays, keep target values but ensure all source values are present
+			const targetSet = new Set(targetValue);
+			const newValues = sourceValue.filter((v: unknown) => !targetSet.has(v));
+			(merged as Record<string, unknown>)[key] = [...targetValue, ...newValues];
+			continue;
+		}
+
+		// Handle nested objects: recursively merge
+		if (sourceValue && typeof sourceValue === "object" && !Array.isArray(sourceValue)) {
+			(merged as Record<string, unknown>)[key] = deepMerge(targetValue, sourceValue);
+			continue;
+		}
+
+		// For primitives, keep target value
+		(merged as Record<string, unknown>)[key] = targetValue;
+	}
+
+	return merged;
+}
+
+/**
  * LocalStorage adapter for persistence
  */
 export function createLocalStorageAdapter<T>(storageKey: string): PersistenceAdapter<T> {
@@ -85,7 +129,9 @@ export function createPersistedStore<T>(defaultState: T, adapter: PersistenceAda
 		try {
 			const loaded = await adapter.load();
 			if (loaded !== null) {
-				store.setState(() => loaded);
+				// Deep merge loaded state with default state to include new properties
+				const merged = deepMerge(loaded, defaultState);
+				store.setState(() => merged);
 			}
 		} catch (error) {
 			console.error("Failed to load persisted state:", error);

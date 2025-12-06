@@ -5,6 +5,7 @@ export type DensityType = "comfortable" | "standard" | "compact";
 interface ColumnVisibilityState {
 	hiddenColumns: Record<string, string[]>; // page -> array of hidden column ids
 	density: Record<string, DensityType>; // page -> density setting
+	columnOrder: Record<string, string[]>; // page -> array of column ids in order
 }
 
 // Create store with automatic localStorage persistence
@@ -12,6 +13,7 @@ export const columnVisibilityStore = createPersistedStore<ColumnVisibilityState>
 	{
 		hiddenColumns: {},
 		density: {},
+		columnOrder: {},
 	},
 	createLocalStorageAdapter<ColumnVisibilityState>("column-visibility-storage"),
 );
@@ -57,4 +59,27 @@ export const setDensity = (page: string, density: DensityType) => {
 export const getDensity = (page: string): DensityType => {
 	const state = columnVisibilityStore.state;
 	return state.density[page] || "standard";
+};
+
+export const getColumnOrder = (page: string, defaultOrder: string[]): string[] => {
+	const state = columnVisibilityStore.state;
+	const storedOrder = state.columnOrder[page];
+
+	if (!storedOrder) {
+		return defaultOrder;
+	}
+
+	// Merge stored order with default order to include new columns
+	const newColumns = defaultOrder.filter((id) => !storedOrder.includes(id));
+	return [...storedOrder, ...newColumns];
+};
+
+export const setColumnOrder = (page: string, columnOrder: string[]) => {
+	columnVisibilityStore.setState((state) => ({
+		...state,
+		columnOrder: {
+			...state.columnOrder,
+			[page]: columnOrder,
+		},
+	}));
 };

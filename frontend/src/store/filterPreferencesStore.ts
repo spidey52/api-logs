@@ -3,6 +3,7 @@ import { createLocalStorageAdapter, createPersistedStore } from "./persistenceMi
 interface FilterPreferencesState {
 	visibleFilters: Record<string, string[]>; // page -> array of visible filter ids
 	filterOrder: Record<string, string[]>; // page -> array of filter ids in order
+	filterSizes: Record<string, Record<string, number>>; // page -> filterId -> size
 }
 
 // Create store with automatic localStorage persistence
@@ -10,6 +11,7 @@ export const filterPreferencesStore = createPersistedStore<FilterPreferencesStat
 	{
 		visibleFilters: {},
 		filterOrder: {},
+		filterSizes: {},
 	},
 	createLocalStorageAdapter<FilterPreferencesState>("filter-preferences-storage"),
 );
@@ -47,6 +49,24 @@ export const setFilterOrder = (page: string, filterOrder: string[]) => {
 		filterOrder: {
 			...state.filterOrder,
 			[page]: filterOrder,
+		},
+	}));
+};
+
+export const getFilterSize = (page: string, filterId: string): number | undefined => {
+	const state = filterPreferencesStore.state;
+	return state.filterSizes[page]?.[filterId];
+};
+
+export const setFilterSize = (page: string, filterId: string, size: number) => {
+	filterPreferencesStore.setState((state) => ({
+		...state,
+		filterSizes: {
+			...state.filterSizes,
+			[page]: {
+				...state.filterSizes[page],
+				[filterId]: size,
+			},
 		},
 	}));
 };

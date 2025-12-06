@@ -1,4 +1,4 @@
-import { Dashboard, Description, Folder, Logout, Menu as MenuIcon, People } from "@mui/icons-material";
+import { DarkMode, Dashboard, Description, Folder, LightMode, Logout, Menu as MenuIcon, People, SettingsBrightness } from "@mui/icons-material";
 import { AppBar, Box, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography } from "@mui/material";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
@@ -19,13 +19,22 @@ const menuItems = [
 
 interface LayoutProps {
  children: ReactNode;
+ themeMode: "light" | "dark" | "system";
+ onThemeChange: (mode: "light" | "dark" | "system") => void;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, themeMode, onThemeChange }: LayoutProps) {
  const sidebarOpen = useStore(appStore, (state) => state.sidebarOpen);
  const router = useRouterState();
  const navigate = useNavigate();
  const currentPath = router.location.pathname;
+
+ const handleThemeToggle = () => {
+  const modes: Array<"light" | "dark" | "system"> = ["light", "dark", "system"];
+  const currentIndex = modes.indexOf(themeMode);
+  const nextIndex = (currentIndex + 1) % modes.length;
+  onThemeChange(modes[nextIndex]);
+ };
 
  const handleLogout = () => {
   clearApiKey();
@@ -89,6 +98,9 @@ export default function Layout({ children }: LayoutProps) {
       API Logs Dashboard
      </Typography>
      <KeyboardShortcutsButton />
+     <IconButton color='inherit' onClick={handleThemeToggle} title={`Theme: ${themeMode}`}>
+      {themeMode === "light" ? <LightMode /> : themeMode === "dark" ? <DarkMode /> : <SettingsBrightness />}
+     </IconButton>
      <IconButton color='inherit' onClick={handleLogout} title='Change API Key'>
       <Logout />
      </IconButton>
@@ -145,7 +157,7 @@ export default function Layout({ children }: LayoutProps) {
     }}
    >
     <Toolbar />
-    <Box sx={{ flex: 1, overflow: "auto", px: 1, py: 1 }}>{children}</Box>
+    <Box sx={{ flex: 1, overflow: "auto", p: 2 }}>{children}</Box>
    </Box>
   </Box>
  );
