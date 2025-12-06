@@ -9,8 +9,8 @@ export interface HonoMiddlewareOptions {
 		user_name?: string;
 		user_id?: string;
 	};
-	captureRequestBody?: boolean;
-	captureResponseBody?: boolean;
+	captureRequestBody?: boolean | ((c: Context) => boolean);
+	captureResponseBody?: boolean | ((statusCode: number) => boolean) | ((c: Context) => boolean);
 	captureHeaders?: boolean;
 }
 
@@ -24,7 +24,8 @@ export function createHonoMiddleware(options: HonoMiddlewareOptions): Middleware
 
 		// Capture request data
 		let requestBody: any;
-		if (captureRequestBody) {
+		const shouldCaptureRequestBody = typeof captureRequestBody === "function" ? captureRequestBody(c) : captureRequestBody;
+		if (shouldCaptureRequestBody) {
 			try {
 				const contentType = c.req.header("content-type");
 				if (contentType?.includes("application/json")) {
@@ -52,7 +53,18 @@ export function createHonoMiddleware(options: HonoMiddlewareOptions): Middleware
 
 		// Capture response data
 		let responseBody: any;
-		if (captureResponseBody && c.res) {
+		const evaluateCaptureResponse = () => {
+			if (typeof captureResponseBody === "function") {
+				// Try with status code first (1 parameter)
+				if (captureResponseBody.length === 1) {
+					return (captureResponseBody as (statusCode: number) => boolean)(c.res.status);
+				}
+				// Otherwise use full signature (1 parameter for Context)
+				return (captureResponseBody as (c: Context) => boolean)(c);
+			}
+			return captureResponseBody;
+		};
+		if (evaluateCaptureResponse() && c.res) {
 			try {
 				const contentType = c.res.headers.get("content-type");
 				if (contentType?.includes("application/json")) {

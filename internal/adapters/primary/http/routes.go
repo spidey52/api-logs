@@ -59,6 +59,7 @@ func SetupRoutes(
 			logs.POST("/batch", apiLogHandler.CreateBatchLogs)
 			logs.GET("", apiLogHandler.ListLogs)
 			logs.GET("/stats", apiLogHandler.GetStats)
+			logs.GET("/paths", apiLogHandler.GetUniquePaths)
 			logs.GET("/:id", apiLogHandler.GetLog)
 			logs.GET("/:id/details", apiLogHandler.GetLogWithDetails)
 			logs.GET("/:id/headers", apiLogHandler.GetLogHeaders)

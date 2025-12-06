@@ -31,9 +31,15 @@ type APILogService interface {
 	// ListLogs retrieves logs based on filter criteria (core logs only)
 	ListLogs(ctx context.Context, filter domain.LogFilter) ([]*domain.APILog, error)
 
+	// CountLogs counts logs matching the filter criteria
+	CountLogs(ctx context.Context, filter domain.LogFilter) (int64, error)
+
 	// DeleteLog deletes a log and its associated headers/body
 	DeleteLog(ctx context.Context, id string) error
 
 	// GetLogStats retrieves statistics for a project
 	GetLogStats(ctx context.Context, projectID string, environment domain.Environment) (map[string]interface{}, error)
+
+	// GetUniquePaths retrieves unique paths for autocomplete
+	GetUniquePaths(ctx context.Context, projectID string, environment domain.Environment) ([]string, error)
 }

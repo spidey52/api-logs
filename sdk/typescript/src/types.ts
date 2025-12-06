@@ -1,14 +1,14 @@
-export type Environment = "dev" | "production";
+export type Environment = "dev" | "staging" | "production";
 
 export type HTTPMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD" | "OPTIONS";
 
 export interface APILogEntry {
 	method: HTTPMethod;
 	path: string;
-	query_params: Record<string, string>;
+	query_params?: Record<string, string>;
 	status_code: number;
 	response_time_ms: number;
-	content_length: number;
+	content_length?: number;
 	ip_address?: string;
 	user_agent?: string;
 	user_id?: string;

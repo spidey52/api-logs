@@ -1,5 +1,5 @@
-import { Close, Visibility } from "@mui/icons-material";
-import { Box, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, Paper, Stack, Typography } from "@mui/material";
+import { Close, Download, MoreVert, Visibility } from "@mui/icons-material";
+import { Box, Button, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Paper, Stack, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
@@ -8,6 +8,8 @@ import DataTable, { type Column, type DataTableAction } from "../components/Data
 import FilterToolbar, { type FilterConfig } from "../components/FilterToolbar";
 import DateFilter from "../components/filters/DateFilter";
 import DateRangeFilter from "../components/filters/DateRangeFilter";
+import PathAutocompleteFilter from "../components/filters/PathAutocompleteFilter";
+import SearchFilter from "../components/filters/SearchFilter";
 import StatusCodeRangeFilter from "../components/filters/StatusCodeRangeFilter";
 import { logsApi } from "../lib/api";
 import { getFilterValueFromUrl } from "../lib/filterUtils";
@@ -36,10 +38,13 @@ export default function LogsPage() {
 
  // Get logId from query params for dialog
  const selectedLogId = searchParams.logId;
+ const [activePresetName, setActivePresetName] = useState<string | null>(null);
+ const [isExporting, setIsExporting] = useState(false);
+ const [actionsAnchorEl, setActionsAnchorEl] = useState<null | HTMLElement>(null);
 
  // Default filter configurations
- const defaultVisibleFilters = ["method", "environment", "statusCode"];
- const defaultFilterOrder = ["method", "environment", "statusCode", "date", "dateRange", "path", "projectId"];
+ const defaultVisibleFilters = ["method", "environment", "statusCode", "search"];
+ const defaultFilterOrder = ["search", "method", "environment", "statusCode", "date", "dateRange", "path", "projectId"];
 
  // Get filter preferences from store
  const filterPreferences = useStore(filterPreferencesStore);
@@ -57,6 +62,7 @@ export default function LogsPage() {
   dateRange: getFilterValueFromUrl(searchParams, "dateRange", "text") as string | undefined,
   path: getFilterValueFromUrl(searchParams, "path", "text") as string | undefined,
   projectId: getFilterValueFromUrl(searchParams, "projectId", "text") as string | undefined,
+  search: getFilterValueFromUrl(searchParams, "search", "text") as string | undefined,
  }));
 
  const handleVisibilityToggle = (filterId: string) => {
@@ -79,6 +85,66 @@ export default function LogsPage() {
    page: 1,
    limit: 50,
   });
+  setActivePresetName(null);
+ };
+
+ const handleLoadPreset = (presetFilters: Record<string, unknown>, presetName: string) => {
+  // Clear all filters and apply preset
+  setFilters({
+   page: 1,
+   limit: 50,
+   ...presetFilters,
+  } as LogFilters);
+  setActivePresetName(presetName);
+ };
+
+ const exportToCSV = async () => {
+  try {
+   setIsExporting(true);
+   // Fetch all data with current filters (without pagination)
+   const response = await logsApi.getAll({ ...filters, page: 1, limit: 10000 });
+   const logs = response.data.data;
+
+   // Create CSV headers
+   const headers = ["Method", "Path", "Status Code", "Response Time (ms)", "Environment", "Timestamp"];
+   const csvContent = [
+    headers.join(","),
+    ...logs.map((log) => [log.method, `"${log.path}"`, log.status_code, log.response_time, log.environment, new Date(log.timestamp).toISOString()].join(",")),
+   ].join("\n");
+
+   // Download file
+   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+   const link = document.createElement("a");
+   link.href = URL.createObjectURL(blob);
+   link.download = `api-logs-${new Date().toISOString().split("T")[0]}.csv`;
+   link.click();
+   URL.revokeObjectURL(link.href);
+  } catch (error) {
+   console.error("Export failed:", error);
+  } finally {
+   setIsExporting(false);
+  }
+ };
+
+ const exportToJSON = async () => {
+  try {
+   setIsExporting(true);
+   // Fetch all data with current filters (without pagination)
+   const response = await logsApi.getAll({ ...filters, page: 1, limit: 10000 });
+   const logs = response.data.data;
+
+   // Download file
+   const blob = new Blob([JSON.stringify(logs, null, 2)], { type: "application/json" });
+   const link = document.createElement("a");
+   link.href = URL.createObjectURL(blob);
+   link.download = `api-logs-${new Date().toISOString().split("T")[0]}.json`;
+   link.click();
+   URL.revokeObjectURL(link.href);
+  } catch (error) {
+   console.error("Export failed:", error);
+  } finally {
+   setIsExporting(false);
+  }
  };
 
  const { data, isLoading } = useQuery({
@@ -111,6 +177,16 @@ export default function LogsPage() {
  };
 
  const filterConfigsMap: Record<string, FilterConfig> = {
+  search: {
+   id: "search",
+   label: "Search",
+   type: "custom",
+   value: filters.search,
+   onChange: (value) => setFilters({ ...filters, search: value as string }),
+   visible: visibleFilters.includes("search"),
+   size: 3,
+   customComponent: SearchFilter,
+  },
   method: {
    id: "method",
    label: "Method",
@@ -133,7 +209,7 @@ export default function LogsPage() {
    type: "select",
    value: filters.environment,
    options: [
-    { value: "development", label: "Development" },
+    { value: "dev", label: "Development" },
     { value: "staging", label: "Staging" },
     { value: "production", label: "Production" },
    ],
@@ -174,11 +250,12 @@ export default function LogsPage() {
   path: {
    id: "path",
    label: "Path",
-   type: "text",
+   type: "custom",
    value: filters.path,
    onChange: (value) => setFilters({ ...filters, path: value as string }),
    visible: visibleFilters.includes("path"),
    size: 2,
+   customComponent: PathAutocompleteFilter,
   },
   projectId: {
    id: "projectId",
@@ -265,6 +342,15 @@ export default function LogsPage() {
      onClearAll={handleClearAll}
      maxToolbarUnits={12}
      urlPath='/logs'
+     pageKey='logs'
+     currentFilters={filters as Record<string, unknown>}
+     onLoadPreset={handleLoadPreset}
+     activePresetName={activePresetName}
+     actions={
+      <Button variant='outlined' startIcon={<MoreVert />} size='small' onClick={(e) => setActionsAnchorEl(e.currentTarget)} sx={{ height: 40, minWidth: 120 }}>
+       Actions
+      </Button>
+     }
     />
 
     <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
@@ -363,6 +449,40 @@ export default function LogsPage() {
      )}
     </DialogContent>
    </Dialog>
+
+   {/* Actions Menu */}
+   <Menu
+    anchorEl={actionsAnchorEl}
+    open={Boolean(actionsAnchorEl)}
+    onClose={() => setActionsAnchorEl(null)}
+    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+    transformOrigin={{ vertical: "top", horizontal: "right" }}
+   >
+    <MenuItem
+     onClick={() => {
+      exportToCSV();
+      setActionsAnchorEl(null);
+     }}
+     disabled={isExporting || !data?.data?.length}
+    >
+     <ListItemIcon>
+      <Download fontSize='small' />
+     </ListItemIcon>
+     <ListItemText primary='Export as CSV' secondary='Download filtered data as CSV' />
+    </MenuItem>
+    <MenuItem
+     onClick={() => {
+      exportToJSON();
+      setActionsAnchorEl(null);
+     }}
+     disabled={isExporting || !data?.data?.length}
+    >
+     <ListItemIcon>
+      <Download fontSize='small' />
+     </ListItemIcon>
+     <ListItemText primary='Export as JSON' secondary='Download filtered data as JSON' />
+    </MenuItem>
+   </Menu>
   </Box>
  );
 }

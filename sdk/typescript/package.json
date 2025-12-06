@@ -1,6 +1,6 @@
 {
-	"name": "@your-org/api-logs-sdk",
-	"version": "1.0.0",
+	"name": "@spidey52/api-logs-sdk",
+	"version": "1.0.2",
 	"description": "TypeScript/JavaScript SDK for API logging service with Express and Hono middleware support",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -25,17 +25,17 @@
 		"middleware",
 		"analytics"
 	],
-	"author": "Your Name <your.email@example.com>",
+	"author": "Satyam Kumar <satyamkumar5254@gmail.com>",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/your-org/api-logs.git",
+		"url": "https://github.com/spidey52/api-logs.git",
 		"directory": "sdk/typescript"
 	},
 	"bugs": {
-		"url": "https://github.com/your-org/api-logs/issues"
+		"url": "https://github.com/spidey52/api-logs/issues"
 	},
-	"homepage": "https://github.com/your-org/api-logs#readme",
+	"homepage": "https://github.com/spidey52/api-logs#readme",
 	"dependencies": {
 		"axios": "^1.6.8"
 	},

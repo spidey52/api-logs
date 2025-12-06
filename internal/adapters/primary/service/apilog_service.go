@@ -147,6 +147,11 @@ func (s *apiLogService) ListLogs(ctx context.Context, filter domain.LogFilter) (
 	return s.logRepo.FindByFilter(ctx, filter)
 }
 
+// CountLogs counts logs matching the filter criteria
+func (s *apiLogService) CountLogs(ctx context.Context, filter domain.LogFilter) (int64, error) {
+	return s.logRepo.CountByFilter(ctx, filter)
+}
+
 // DeleteLog deletes a log and its associated headers/body
 func (s *apiLogService) DeleteLog(ctx context.Context, id string) error {
 	// Check if log exists
@@ -196,13 +201,43 @@ func (s *apiLogService) GetLogStats(ctx context.Context, projectID string, envir
 		return nil, err
 	}
 
+	// Get time series data
+	timeSeries, err := s.logRepo.GetTimeSeriesStats(ctx, projectID, environment)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get top endpoints
+	topEndpoints, err := s.logRepo.GetTopEndpoints(ctx, projectID, environment, 10)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get method distribution
+	methodDistribution, err := s.logRepo.GetMethodDistribution(ctx, projectID, environment)
+	if err != nil {
+		return nil, err
+	}
+
 	stats := map[string]interface{}{
 		"total_logs":               count,
 		"status_code_distribution": distribution,
 		"average_response_time_ms": avgResponseTime,
+		"time_series":              timeSeries,
+		"top_endpoints":            topEndpoints,
+		"method_distribution":      methodDistribution,
 		"environment":              environment.String(),
 		"project_id":               projectID,
 	}
 
 	return stats, nil
+}
+
+// GetUniquePaths retrieves unique paths for autocomplete
+func (s *apiLogService) GetUniquePaths(ctx context.Context, projectID string, environment domain.Environment) ([]string, error) {
+	if err := environment.Validate(); err != nil {
+		return nil, domain.ErrInvalidEnvironment
+	}
+
+	return s.logRepo.GetUniquePaths(ctx, projectID, environment)
 }

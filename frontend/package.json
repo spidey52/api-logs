@@ -20,10 +20,13 @@
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.139.14",
     "@tanstack/react-store": "^0.8.0",
+    "@uiw/react-json-view": "^2.0.0-alpha.39",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-json-view-lite": "^2.5.0",
+    "recharts": "^3.5.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

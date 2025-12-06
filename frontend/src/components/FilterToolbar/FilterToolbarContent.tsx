@@ -34,7 +34,7 @@ export default function FilterToolbarContent({ title, visibleFilters, appliedFil
      );
     })}
     <Badge badgeContent={appliedFilterCount} color='primary' max={99}>
-     <Button variant='outlined' startIcon={<FilterList />} onClick={onOpenDrawer} size='small'>
+     <Button variant='outlined' startIcon={<FilterList />} onClick={onOpenDrawer} size='small' sx={{ height: 40, minWidth: 120 }}>
       Filters
      </Button>
     </Badge>

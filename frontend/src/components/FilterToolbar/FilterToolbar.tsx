@@ -8,7 +8,22 @@ import FilterToolbarContent from "./FilterToolbarContent";
 import type { FilterConfig, FilterToolbarProps } from "./types";
 import { buildSearchParams, countAppliedFilters, getVisibleFilters } from "./utils";
 
-export default function FilterToolbar({ title, filters, onVisibilityToggle, onReorder, onSizeChange, onClearAll, maxToolbarUnits = 12, actions, syncWithUrl = true, urlPath }: FilterToolbarProps) {
+export default function FilterToolbar({
+ title,
+ filters,
+ onVisibilityToggle,
+ onReorder,
+ onSizeChange,
+ onClearAll,
+ maxToolbarUnits = 12,
+ actions,
+ syncWithUrl = true,
+ urlPath,
+ pageKey,
+ currentFilters,
+ onLoadPreset,
+ activePresetName,
+}: FilterToolbarProps) {
  const navigate = useNavigate();
  const currentSearch = useSearch({ strict: false }) as Record<string, string | undefined>;
 
@@ -69,6 +84,10 @@ export default function FilterToolbar({ title, filters, onVisibilityToggle, onRe
     onVisibilityToggle={onVisibilityToggle}
     onSizeChange={onSizeChange}
     maxToolbarUnits={maxToolbarUnits}
+    pageKey={pageKey}
+    currentFilters={currentFilters}
+    onLoadPreset={onLoadPreset}
+    activePresetName={activePresetName}
    />
   </>
  );

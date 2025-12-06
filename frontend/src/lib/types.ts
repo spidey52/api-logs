@@ -94,6 +94,7 @@ export interface LogFilters {
   endDate?: string;
   date?: string; // Format: "YYYY-MM-DD" (single date)
   dateRange?: string; // Format: "YYYY-MM-DD|YYYY-MM-DD"
+  search?: string; // Full-text search across logs
   page?: number;
   limit?: number;
 }

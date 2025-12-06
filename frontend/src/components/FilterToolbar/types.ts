@@ -28,4 +28,9 @@ export interface FilterToolbarProps {
 	actions?: React.ReactNode;
 	syncWithUrl?: boolean; // Enable URL query parameter sync (default: true)
 	urlPath?: string; // Path for navigation (e.g., '/logs', '/users')
+	// Preset props
+	pageKey?: string;
+	currentFilters?: Record<string, unknown>;
+	onLoadPreset?: (filters: Record<string, unknown>, presetName: string) => void;
+	activePresetName?: string | null;
 }

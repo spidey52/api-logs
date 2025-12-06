@@ -15,17 +15,17 @@ TypeScript SDK for the API logging service with **Express** and **Hono** middlew
 ## Installation
 
 ```bash
-npm install @your-org/api-logs-sdk
+npm install @spidey52/api-logs-sdk
 # or
-yarn add @your-org/api-logs-sdk
+yarn add @spidey52/api-logs-sdk
 # or
-pnpm add @your-org/api-logs-sdk
+pnpm add @spidey52/api-logs-sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { APILogsExporter } from "@api-logs/exporter";
+import { APILogsExporter } from "@spidey52/api-logs-sdk";
 
 const exporter = new APILogsExporter({
  apiKey: "your-api-key-here",
@@ -137,7 +137,7 @@ await exporter.log({
 
 ```typescript
 import express from "express";
-import { APILogsExporter, createExpressMiddleware } from "@your-org/api-logs-sdk";
+import { APILogsExporter, createExpressMiddleware } from "@spidey52/api-logs-sdk";
 
 const app = express();
 const exporter = new APILogsExporter({
@@ -169,7 +169,7 @@ app.get("/api/users", (req, res) => {
 
 ```typescript
 import { Hono } from "hono";
-import { APILogsExporter, createHonoMiddleware } from "@your-org/api-logs-sdk";
+import { APILogsExporter, createHonoMiddleware } from "@spidey52/api-logs-sdk";
 
 const app = new Hono();
 const exporter = new APILogsExporter({

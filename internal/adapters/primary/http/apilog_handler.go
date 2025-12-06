@@ -2,10 +2,14 @@ package http
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spidey52/api-logs/internal/domain"
 	"github.com/spidey52/api-logs/internal/ports/input"
+	"github.com/spidey52/api-logs/pkg/logger"
 )
 
 // APILogHandler handles HTTP requests for API logs
@@ -248,14 +252,28 @@ func (h *APILogHandler) GetLogBody(c *gin.Context) {
 func (h *APILogHandler) ListLogs(c *gin.Context) {
 	// Get project info from middleware
 	projectID, _ := c.Get("project_id")
-	environment, _ := c.Get("environment")
+	environment := c.Query("environment")
+
+	logger.Info("Listing logs for project", projectID, "environment", environment)
 
 	filter := domain.LogFilter{
 		ProjectID:   projectID.(string),
-		Environment: domain.Environment(environment.(string)),
+		Environment: domain.Environment(environment),
 	}
 
-	// Parse optional query parameters
+	// Parse pagination parameters
+	if page := c.Query("page"); page != "" {
+		if pageNum, err := strconv.Atoi(page); err == nil && pageNum > 0 {
+			if limit := c.Query("limit"); limit != "" {
+				if limitNum, err := strconv.Atoi(limit); err == nil && limitNum > 0 {
+					filter.Offset = (pageNum - 1) * limitNum
+					filter.Limit = limitNum
+				}
+			}
+		}
+	}
+
+	// Parse filter parameters
 	if method := c.Query("method"); method != "" {
 		filter.Method = domain.HTTPMethod(method)
 	}
@@ -264,13 +282,75 @@ func (h *APILogHandler) ListLogs(c *gin.Context) {
 		filter.Path = path
 	}
 
+	if search := c.Query("search"); search != "" {
+		filter.Search = search
+	}
+
+	if statusCode := c.Query("statusCode"); statusCode != "" {
+		// Check if it's a range (format: "min-max") or single value
+		if strings.Contains(statusCode, "-") {
+			parts := strings.Split(statusCode, "-")
+			if len(parts) == 2 {
+				if minCode, err := strconv.Atoi(strings.TrimSpace(parts[0])); err == nil {
+					filter.StatusCodeMin = &minCode
+				}
+				if maxCode, err := strconv.Atoi(strings.TrimSpace(parts[1])); err == nil {
+					filter.StatusCodeMax = &maxCode
+				}
+			}
+		} else {
+			// Single status code
+			if code, err := strconv.Atoi(statusCode); err == nil {
+				filter.StatusCode = &code
+			}
+		}
+	}
+
+	if date := c.Query("date"); date != "" {
+		if parsedDate, err := time.Parse("2006-01-02", date); err == nil {
+			// Set to start of day
+			startOfDay := time.Date(parsedDate.Year(), parsedDate.Month(), parsedDate.Day(), 0, 0, 0, 0, parsedDate.Location())
+			endOfDay := startOfDay.Add(24 * time.Hour)
+			filter.FromDate = &startOfDay
+			filter.ToDate = &endOfDay
+		}
+	}
+
+	if dateRange := c.Query("dateRange"); dateRange != "" {
+		// Format: "startDate,endDate" (e.g., "2024-01-01,2024-01-31")
+		dates := strings.Split(dateRange, "|")
+		if len(dates) == 2 {
+			if startDate, err := time.Parse("2006-01-02", strings.TrimSpace(dates[0])); err == nil {
+				filter.FromDate = &startDate
+			}
+			if endDate, err := time.Parse("2006-01-02", strings.TrimSpace(dates[1])); err == nil {
+				// Set to end of day
+				endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, endDate.Location())
+				filter.ToDate = &endOfDay
+			}
+		}
+	}
+
+	// Apply defaults for pagination
+	filter.ApplyDefaults()
+
 	logs, err := h.logService.ListLogs(c.Request.Context(), filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve logs"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": logs})
+	// Get total count for pagination
+	total, err := h.logService.CountLogs(c.Request.Context(), filter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get total count"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  logs,
+		"total": total,
+	})
 }
 
 // GetStats handles GET /api/v1/logs/stats
@@ -290,6 +370,25 @@ func (h *APILogHandler) GetStats(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": stats})
+}
+
+// GetUniquePaths handles GET /api/v1/logs/paths
+func (h *APILogHandler) GetUniquePaths(c *gin.Context) {
+	// Get project info from middleware
+	projectID, _ := c.Get("project_id")
+	environment, _ := c.Get("environment")
+
+	paths, err := h.logService.GetUniquePaths(
+		c.Request.Context(),
+		projectID.(string),
+		domain.Environment(environment.(string)),
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve paths"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": paths})
 }
 
 // CreateBatchLogs handles POST /api/v1/logs/batch

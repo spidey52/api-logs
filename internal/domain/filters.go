@@ -10,13 +10,16 @@ type SharedFilter struct {
 // LogFilter represents filtering criteria for querying logs
 type LogFilter struct {
 	SharedFilter
-	ProjectID   string
-	Environment Environment
-	Method      HTTPMethod
-	StatusCode  *int
-	Path        string
-	FromDate    *time.Time
-	ToDate      *time.Time
+	ProjectID     string
+	Environment   Environment
+	Method        HTTPMethod
+	StatusCode    *int
+	StatusCodeMin *int
+	StatusCodeMax *int
+	Path          string
+	Search        string
+	FromDate      *time.Time
+	ToDate        *time.Time
 }
 
 // ApplyDefaults sets default values for pagination

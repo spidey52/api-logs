@@ -3,8 +3,8 @@ import { APILogsExporter } from "../index";
 import { APILogEntry } from "../types";
 
 export interface ExpressMiddlewareOptions {
-	captureRequestBody?: boolean;
-	captureResponseBody?: boolean;
+	captureRequestBody?: boolean | ((req: Request, res: Response) => boolean);
+	captureResponseBody?: boolean | ((statusCode: number) => boolean) | ((req: Request, res: Response) => boolean);
 	captureHeaders?: boolean;
 	excludePaths?: string[];
 	getUserInfo?: (req: Request) => {
@@ -28,18 +28,30 @@ export function createExpressMiddleware(exporter: APILogsExporter, options: Expr
 
 		const startTime = Date.now();
 
-		// Capture request body if enabled
+		// Capture request body conditionally
 		let requestBody: any = null;
-		if (captureRequestBody && req.body) {
+		const shouldCaptureRequestBody = typeof captureRequestBody === "function" ? captureRequestBody(req, res) : captureRequestBody;
+		if (shouldCaptureRequestBody && req.body) {
 			requestBody = req.body;
 		}
 
 		// Override res.json to capture response
 		const originalJson = res.json.bind(res);
 		let responseBody: any = null;
+		const evaluateCaptureResponse = (statusCode: number) => {
+			if (typeof captureResponseBody === "function") {
+				// Try with status code first (1 parameter)
+				if (captureResponseBody.length === 1) {
+					return (captureResponseBody as (statusCode: number) => boolean)(statusCode);
+				}
+				// Otherwise use full signature (2 parameters)
+				return (captureResponseBody as (req: Request, res: Response) => boolean)(req, res);
+			}
+			return captureResponseBody;
+		};
 
 		res.json = function (body: any) {
-			if (captureResponseBody) {
+			if (evaluateCaptureResponse(res.statusCode)) {
 				responseBody = body;
 			}
 			return originalJson(body);

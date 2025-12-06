@@ -68,7 +68,7 @@ export default function SortableFilterItem({ filter, filters, disabled, onVisibi
      variant='outlined'
      sx={{
       p: 2,
-      bgcolor: (theme) => (filter.visible ? (theme.palette.mode === "dark" ? "primary.900" : "primary.50") : "action.hover"),
+      bgcolor: (theme) => (filter.visible ? (theme.palette.mode === "dark" ? "rgba(144, 202, 249, 0.08)" : "primary.50") : "action.hover"),
       borderColor: filter.visible ? "primary.main" : "divider",
       borderWidth: filter.visible ? 2 : 1,
      }}

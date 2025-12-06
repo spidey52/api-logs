@@ -70,6 +70,7 @@ export const usersApi = {
 export const logsApi = {
   getAll: (filters?: LogFilters) => api.get<PaginatedResponse<APILog>>("/logs", { params: filters }),
   getById: (id: string) => api.get<APILog>(`/logs/${id}`),
+  getDetails: (id: string) => api.get(`/logs/${id}/details`),
   delete: (id: string) => api.delete(`/logs/${id}`),
   getStats: (projectId?: string) => api.get("/logs/stats", { params: { projectId } }),
 };
