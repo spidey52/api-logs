@@ -41,6 +41,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		Name:       req.Name,
 		Identifier: req.Identifier,
 		Metadata:   req.Metadata,
+		ProjectID:  req.ProjectID,
 	}
 
 	if err := h.userService.CreateUser(c.Request.Context(), user); err != nil {
@@ -100,7 +101,9 @@ func (h *UserHandler) GetUserByIdentifier(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.GetUserByIdentifier(c.Request.Context(), identifier)
+	projectID := c.Query("project_id")
+
+	user, err := h.userService.GetUserByIdentifier(c.Request.Context(), identifier, projectID)
 	if err != nil {
 		if err == domain.ErrUserNotFound {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "User not found"})
@@ -221,6 +224,7 @@ type CreateUserRequest struct {
 	Identifier string         `json:"identifier" binding:"required"`
 	Email      string         `json:"email"`
 	Metadata   map[string]any `json:"metadata"`
+	ProjectID  string         `json:"project_id" binding:"required"`
 }
 
 type UpdateUserRequest struct {

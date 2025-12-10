@@ -9,9 +9,10 @@ import (
 
 // Config holds all configuration for the application
 type Config struct {
-	Server  ServerConfig
-	MongoDB MongoDBConfig
-	App     AppConfig
+	Server   ServerConfig
+	MongoDB  MongoDBConfig
+	App      AppConfig
+	Postgres PostgresConfig
 }
 
 // ServerConfig holds server configuration
@@ -24,6 +25,10 @@ type ServerConfig struct {
 type MongoDBConfig struct {
 	URI      string
 	Database string
+}
+
+type PostgresConfig struct {
+	URI string
 }
 
 // AppConfig holds application-specific configuration

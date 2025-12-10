@@ -169,10 +169,8 @@ func (h *APILogHandler) CreateLog(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"data": gin.H{
-		"id":          log.ID,
-		"timestamp":   log.Timestamp,
-		"has_headers": log.HasHeaders,
-		"has_body":    log.HasBody,
+		"id":        log.ID,
+		"timestamp": log.Timestamp,
 	}})
 }
 
@@ -414,9 +412,10 @@ func (h *APILogHandler) CreateBatchLogs(c *gin.Context) {
 		var userID *string
 		if req.CreateUsers && logReq.UserIdentifier != "" {
 			// Try to get existing user
-			user, err := h.userService.GetUserByIdentifier(c.Request.Context(), logReq.UserIdentifier)
+			user, err := h.userService.GetUserByIdentifier(c.Request.Context(), logReq.UserIdentifier, projectID.(string))
 
-			if err == domain.ErrUserNotFound {
+			switch err {
+			case domain.ErrUserNotFound:
 				// Create new user
 				newUser := &domain.User{
 					Identifier: logReq.UserIdentifier,
@@ -427,7 +426,7 @@ func (h *APILogHandler) CreateBatchLogs(c *gin.Context) {
 					userID = &newUser.ID
 				}
 				// If creation fails, continue without user ID
-			} else if err == nil {
+			case nil:
 				// User found
 				userID = &user.ID
 			}

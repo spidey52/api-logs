@@ -10,9 +10,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 	httpHandler "github.com/spidey52/api-logs/internal/adapters/primary/http"
 	"github.com/spidey52/api-logs/internal/adapters/primary/service"
 	"github.com/spidey52/api-logs/internal/adapters/secondary/repository/mongodb"
+	"github.com/spidey52/api-logs/internal/adapters/secondary/repository/postgres"
 	"github.com/spidey52/api-logs/pkg/config"
 	"github.com/spidey52/api-logs/pkg/logger"
 )
@@ -58,16 +60,29 @@ func main() {
 	logger.Info("MongoDB indexes created successfully")
 
 	// Initialize repositories
-	projectRepo := mongodb.NewProjectRepository(mongoClient)
-	logRepo := mongodb.NewAPILogRepository(mongoClient)
-	headersRepo := mongodb.NewHeadersRepository(mongoClient)
-	bodyRepo := mongodb.NewBodyRepository(mongoClient)
-	userRepo := mongodb.NewUserRepository(mongoClient)
+	// projectRepo := mongodb.NewProjectRepository(mongoClient)
+	// logRepo := mongodb.NewAPILogRepository(mongoClient)
+	// headersRepo := mongodb.NewHeadersRepository(mongoClient)
+	// bodyRepo := mongodb.NewBodyRepository(mongoClient)
+	// userRepo := mongodb.NewUserRepository(mongoClient)
+
+	// postgres repositories
+	pool, err := pgxpool.New(ctx, cfg.Postgres.URI)
+	if err != nil {
+		logger.Fatal("Failed to connect to Postgres", "error", err)
+	}
+	defer pool.Close()
+
+	projectRepoPG := postgres.NewProjectRepository(pool)
+	logRepoPG := postgres.NewAPILogRepository(pool)
+	headersRepoPG := postgres.NewAPILogHeadersRepository(pool)
+	bodyRepoPG := postgres.NewAPILogBodyRepository(pool)
+	userRepoPG := postgres.NewUserRepository(pool)
 
 	// Initialize services
-	projectService := service.NewProjectService(projectRepo)
-	logService := service.NewAPILogService(logRepo, headersRepo, bodyRepo)
-	userService := service.NewUserService(userRepo)
+	projectService := service.NewProjectService(projectRepoPG)
+	logService := service.NewAPILogService(logRepoPG, headersRepoPG, bodyRepoPG)
+	userService := service.NewUserService(userRepoPG)
 
 	// Initialize HTTP handlers
 	projectHandler := httpHandler.NewProjectHandler(projectService)

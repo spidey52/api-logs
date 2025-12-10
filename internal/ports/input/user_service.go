@@ -15,7 +15,7 @@ type UserService interface {
 	GetUser(ctx context.Context, id string) (*domain.User, error)
 
 	// GetUserByIdentifier retrieves a user by identifier
-	GetUserByIdentifier(ctx context.Context, identifier string) (*domain.User, error)
+	GetUserByIdentifier(ctx context.Context, identifier string, project_id string) (*domain.User, error)
 
 	// UpdateUser updates an existing user
 	UpdateUser(ctx context.Context, user *domain.User) error

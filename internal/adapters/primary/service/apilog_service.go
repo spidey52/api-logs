@@ -52,17 +52,13 @@ func (s *apiLogService) CreateLog(
 		log.Timestamp = time.Now()
 	}
 
-	// Set flags
-	log.HasHeaders = headers != nil && (len(headers.RequestHeaders) > 0 || len(headers.ResponseHeaders) > 0)
-	log.HasBody = body != nil && (len(body.RequestBody) > 0 || len(body.ResponseBody) > 0)
-
 	// Create main log entry
 	if err := s.logRepo.Create(ctx, log); err != nil {
 		return err
 	}
 
 	// Create headers if provided
-	if log.HasHeaders {
+	if headers != nil && (len(headers.RequestHeaders) > 0 || len(headers.ResponseHeaders) > 0) {
 		headers.ID = uuid.New().String()
 		headers.LogID = log.ID
 		headers.CreatedAt = time.Now()
@@ -76,7 +72,7 @@ func (s *apiLogService) CreateLog(
 	}
 
 	// Create body if provided
-	if log.HasBody {
+	if body != nil && (len(body.RequestBody) > 0 || len(body.ResponseBody) > 0) {
 		body.ID = uuid.New().String()
 		body.LogID = log.ID
 		body.CreatedAt = time.Now()
@@ -111,21 +107,17 @@ func (s *apiLogService) GetLogWithDetails(ctx context.Context, id string) (*doma
 	var body *domain.APILogBody
 
 	// Get headers if they exist
-	if log.HasHeaders {
-		headers, err = s.headersRepo.FindByLogID(ctx, id)
-		if err != nil {
-			// Headers might not exist, don't fail
-			headers = nil
-		}
+	headers, err = s.headersRepo.FindByLogID(ctx, id)
+	if err != nil {
+		// Headers might not exist, don't fail
+		headers = nil
 	}
 
 	// Get body if it exists
-	if log.HasBody {
-		body, err = s.bodyRepo.FindByLogID(ctx, id)
-		if err != nil {
-			// Body might not exist, don't fail
-			body = nil
-		}
+	body, err = s.bodyRepo.FindByLogID(ctx, id)
+	if err != nil {
+		// Body might not exist, don't fail
+		body = nil
 	}
 
 	return log, headers, body, nil
@@ -164,14 +156,10 @@ func (s *apiLogService) DeleteLog(ctx context.Context, id string) error {
 	}
 
 	// Delete headers if they exist
-	if log.HasHeaders {
-		_ = s.headersRepo.Delete(ctx, id) // Ignore error
-	}
+	_ = s.headersRepo.Delete(ctx, id) // Ignore error
 
 	// Delete body if it exists
-	if log.HasBody {
-		_ = s.bodyRepo.Delete(ctx, id) // Ignore error
-	}
+	_ = s.bodyRepo.Delete(ctx, id) // Ignore error
 
 	// Delete main log
 	return s.logRepo.Delete(ctx, id)

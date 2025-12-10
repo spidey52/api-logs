@@ -28,7 +28,7 @@ func (s *userService) CreateUser(ctx context.Context, user *domain.User) error {
 	}
 
 	// Check if identifier already exists
-	existing, _ := s.userRepo.FindByIdentifier(ctx, user.Identifier)
+	existing, _ := s.userRepo.FindByIdentifier(ctx, user.Identifier, user.ProjectID)
 	if existing != nil {
 		return domain.ErrDuplicateUserIdentifier
 	}
@@ -44,8 +44,8 @@ func (s *userService) GetUser(ctx context.Context, id string) (*domain.User, err
 	return s.userRepo.FindByID(ctx, id)
 }
 
-func (s *userService) GetUserByIdentifier(ctx context.Context, identifier string) (*domain.User, error) {
-	return s.userRepo.FindByIdentifier(ctx, identifier)
+func (s *userService) GetUserByIdentifier(ctx context.Context, identifier string, projectID string) (*domain.User, error) {
+	return s.userRepo.FindByIdentifier(ctx, identifier, projectID)
 }
 
 func (s *userService) UpdateUser(ctx context.Context, user *domain.User) error {
@@ -62,7 +62,7 @@ func (s *userService) UpdateUser(ctx context.Context, user *domain.User) error {
 
 	// Check if identifier is being changed and if it's already taken
 	if existing.Identifier != user.Identifier {
-		existingByIdentifier, _ := s.userRepo.FindByIdentifier(ctx, user.Identifier)
+		existingByIdentifier, _ := s.userRepo.FindByIdentifier(ctx, user.Identifier, user.ProjectID)
 		if existingByIdentifier != nil && existingByIdentifier.ID != user.ID {
 			return domain.ErrDuplicateUserIdentifier
 		}

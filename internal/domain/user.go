@@ -9,6 +9,7 @@ type User struct {
 	Identifier string         // Employee ID, Customer ID, etc.
 	Metadata   map[string]any // Additional custom fields
 	CreatedAt  time.Time
+	ProjectID  string `json:"project_id"`
 }
 
 // Validate validates user fields

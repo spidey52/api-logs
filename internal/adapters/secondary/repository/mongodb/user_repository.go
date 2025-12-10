@@ -42,8 +42,8 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*domain.User,
 	return documentToUser(&doc), nil
 }
 
-func (r *userRepository) FindByIdentifier(ctx context.Context, identifier string) (*domain.User, error) {
-	filter := bson.M{"identifier": identifier}
+func (r *userRepository) FindByIdentifier(ctx context.Context, identifier string, projectID string) (*domain.User, error) {
+	filter := bson.M{"identifier": identifier, "project_id": projectID}
 
 	var doc userDocument
 	err := r.collection.FindOne(ctx, filter).Decode(&doc)

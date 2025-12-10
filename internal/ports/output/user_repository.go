@@ -15,7 +15,7 @@ type UserRepository interface {
 	FindByID(ctx context.Context, id string) (*domain.User, error)
 
 	// FindByIdentifier retrieves a user by identifier
-	FindByIdentifier(ctx context.Context, identifier string) (*domain.User, error)
+	FindByIdentifier(ctx context.Context, identifier string, projectID string) (*domain.User, error)
 
 	// Update updates an existing user
 	Update(ctx context.Context, user *domain.User) error

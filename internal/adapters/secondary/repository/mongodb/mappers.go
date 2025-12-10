@@ -35,8 +35,6 @@ type apiLogDocument struct {
 	IPAddress     string            `bson:"ip_address"`
 	UserAgent     string            `bson:"user_agent"`
 	ErrorMessage  string            `bson:"error_message,omitempty"`
-	HasHeaders    bool              `bson:"has_headers"`
-	HasBody       bool              `bson:"has_body"`
 	UserID        *string           `bson:"user_id,omitempty"`
 	Timestamp     time.Time         `bson:"timestamp"`
 }
@@ -68,6 +66,7 @@ type userDocument struct {
 	Metadata   map[string]any `bson:"metadata,omitempty"`
 	CreatedAt  time.Time      `bson:"created_at"`
 	UpdatedAt  time.Time      `bson:"updated_at"`
+	ProjectID  string         `bson:"project_id"`
 }
 
 // Conversion functions: Domain -> Document
@@ -100,8 +99,6 @@ func apiLogToDocument(log *domain.APILog) *apiLogDocument {
 		IPAddress:     log.IPAddress,
 		UserAgent:     log.UserAgent,
 		ErrorMessage:  log.ErrorMessage,
-		HasHeaders:    log.HasHeaders,
-		HasBody:       log.HasBody,
 		UserID:        log.UserID,
 		Timestamp:     log.Timestamp,
 	}
@@ -130,6 +127,7 @@ func bodyToDocument(b *domain.APILogBody) *apiLogBodyDocument {
 func userToDocument(u *domain.User) *userDocument {
 	return &userDocument{
 		ID:         u.ID,
+		ProjectID:  u.ProjectID,
 		Name:       u.Name,
 		Identifier: u.Identifier,
 		Metadata:   u.Metadata,
@@ -167,8 +165,6 @@ func documentToAPILog(doc *apiLogDocument) *domain.APILog {
 		IPAddress:     doc.IPAddress,
 		UserAgent:     doc.UserAgent,
 		ErrorMessage:  doc.ErrorMessage,
-		HasHeaders:    doc.HasHeaders,
-		HasBody:       doc.HasBody,
 		UserID:        doc.UserID,
 		Timestamp:     doc.Timestamp,
 	}
