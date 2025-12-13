@@ -54,7 +54,7 @@ type CreateLogRequest struct {
 
 // CreateBatchLogsRequest represents the request body for batch creating logs
 type CreateBatchLogsRequest struct {
-	Logs        []CreateLogRequest `json:"logs" binding:"required,min=1,max=100"`
+	Logs        []CreateLogRequest `json:"logs" binding:"required,min=1"`
 	CreateUsers bool               `json:"create_users"` // Auto-create users if not found
 }
 
