@@ -45,8 +45,11 @@ type CreateLogRequest struct {
 	UserIdentifier  string            `json:"user_identifier"`
 	RequestHeaders  map[string]any    `json:"request_headers"`
 	ResponseHeaders map[string]any    `json:"response_headers"`
-	RequestBody     map[string]any    `json:"request_body"`
-	ResponseBody    map[string]any    `json:"response_body"`
+	// RequestBody     map[string]any    `json:"request_body"`
+	// ResponseBody    map[string]any    `json:"response_body"`
+
+	RequestBody  any `json:"request_body"`
+	ResponseBody any `json:"response_body"`
 }
 
 // CreateBatchLogsRequest represents the request body for batch creating logs
@@ -151,7 +154,14 @@ func (h *APILogHandler) CreateLog(c *gin.Context) {
 
 	// Create body object if provided
 	var body *domain.APILogBody
-	if len(req.RequestBody) > 0 || len(req.ResponseBody) > 0 {
+	// if len(req.RequestBody) > 0 || len(req.ResponseBody) > 0 {
+	// 	body = &domain.APILogBody{
+	// 		RequestBody:  req.RequestBody,
+	// 		ResponseBody: req.ResponseBody,
+	// 	}
+	// }
+
+	if req.RequestBody != nil || req.ResponseBody != nil {
 		body = &domain.APILogBody{
 			RequestBody:  req.RequestBody,
 			ResponseBody: req.ResponseBody,
@@ -473,7 +483,13 @@ func (h *APILogHandler) CreateBatchLogs(c *gin.Context) {
 
 		// Create body object if provided
 		var body *domain.APILogBody
-		if len(logReq.RequestBody) > 0 || len(logReq.ResponseBody) > 0 {
+		// if len(logReq.RequestBody) > 0 || len(logReq.ResponseBody) > 0 {
+		// 	body = &domain.APILogBody{
+		// 		RequestBody:  logReq.RequestBody,
+		// 		ResponseBody: logReq.ResponseBody,
+		// 	}
+		// }
+		if logReq.RequestBody != nil || logReq.ResponseBody != nil {
 			body = &domain.APILogBody{
 				RequestBody:  logReq.RequestBody,
 				ResponseBody: logReq.ResponseBody,
