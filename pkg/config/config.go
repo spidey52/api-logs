@@ -59,6 +59,9 @@ func Load() *Config {
 			URI:      getEnv("MONGODB_URI", "mongodb://localhost:27017"),
 			Database: getEnv("MONGODB_DATABASE", "api_logs_db"),
 		},
+		Postgres: PostgresConfig{
+			URI: getEnv("POSTGRES_URI", "postgresql://myuser:mypassword@localhost:5433/api_logs_db?sslmode=disable"),
+		},
 		App: AppConfig{
 			Environment: getEnv("APP_ENV", "development"),
 			LogLevel:    getEnv("LOG_LEVEL", "info"),

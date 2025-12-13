@@ -50,11 +50,14 @@ type apiLogHeadersDocument struct {
 
 // apiLogBodyDocument represents the MongoDB document for bodies
 type apiLogBodyDocument struct {
-	ID           string         `bson:"_id"`
-	LogID        string         `bson:"log_id"`
-	RequestBody  map[string]any `bson:"request_body,omitempty"`
-	ResponseBody map[string]any `bson:"response_body,omitempty"`
-	CreatedAt    time.Time      `bson:"created_at"`
+	ID    string `bson:"_id"`
+	LogID string `bson:"log_id"`
+	// RequestBody  map[string]any `bson:"request_body,omitempty"`
+	// ResponseBody map[string]any `bson:"response_body,omitempty"`
+	RequestBody  any `bson:"request_body,omitempty"`
+	ResponseBody any `bson:"response_body,omitempty"`
+
+	CreatedAt time.Time `bson:"created_at"`
 }
 
 // userDocument represents the MongoDB document for users

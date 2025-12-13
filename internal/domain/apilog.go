@@ -81,11 +81,11 @@ func (h *APILogHeaders) Validate() error {
 
 // APILogBody represents request/response bodies stored separately
 type APILogBody struct {
-	ID           string         `json:"id"`
-	LogID        string         `json:"log_id"`
-	RequestBody  map[string]any `json:"request_body,omitempty"`
-	ResponseBody map[string]any `json:"response_body,omitempty"`
-	CreatedAt    time.Time      `json:"created_at"`
+	ID           string    `json:"id"`
+	LogID        string    `json:"log_id"`
+	RequestBody  any       `json:"request_body,omitempty"`
+	ResponseBody any       `json:"response_body,omitempty"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 // Validate validates the body

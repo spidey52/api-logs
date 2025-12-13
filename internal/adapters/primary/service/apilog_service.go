@@ -71,8 +71,7 @@ func (s *apiLogService) CreateLog(
 		}
 	}
 
-	// Create body if provided
-	if body != nil && (len(body.RequestBody) > 0 || len(body.ResponseBody) > 0) {
+	if body != nil && (body.RequestBody != nil || body.ResponseBody != nil) {
 		body.ID = uuid.New().String()
 		body.LogID = log.ID
 		body.CreatedAt = time.Now()

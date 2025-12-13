@@ -12,11 +12,12 @@ import (
 
 const (
 	// Collection names
-	CollectionProjects      = "projects"
-	CollectionAPILogs       = "api_logs"
-	CollectionAPILogHeaders = "api_log_headers"
-	CollectionAPILogBodies  = "api_log_bodies"
-	CollectionUsers         = "users"
+	CollectionProjects        = "projects"
+	CollectionAPILogs         = "api_logs"
+	CollectionAPILogSummaries = "api_log_summaries"
+	CollectionAPILogHeaders   = "api_log_headers"
+	CollectionAPILogBodies    = "api_log_bodies"
+	CollectionUsers           = "users"
 
 	// TTL durations
 	LogsTTLDays    = 30

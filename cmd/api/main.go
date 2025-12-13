@@ -10,11 +10,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	httpHandler "github.com/spidey52/api-logs/internal/adapters/primary/http"
 	"github.com/spidey52/api-logs/internal/adapters/primary/service"
 	"github.com/spidey52/api-logs/internal/adapters/secondary/repository/mongodb"
-	"github.com/spidey52/api-logs/internal/adapters/secondary/repository/postgres"
+	"github.com/spidey52/api-logs/pkg/cache"
 	"github.com/spidey52/api-logs/pkg/config"
 	"github.com/spidey52/api-logs/pkg/logger"
 )
@@ -59,30 +59,42 @@ func main() {
 	}
 	logger.Info("MongoDB indexes created successfully")
 
+	// cache initialization here
+	cacheClient := cache.NewRedisCache(&redis.Options{
+		Addr: "localhost:6379",
+	})
+
+	defer func() {
+		if err := cacheClient.Close(); err != nil {
+			logger.Error("Failed to close cache connection", "error", err)
+		}
+	}()
+
 	// Initialize repositories
-	// projectRepo := mongodb.NewProjectRepository(mongoClient)
-	// logRepo := mongodb.NewAPILogRepository(mongoClient)
-	// headersRepo := mongodb.NewHeadersRepository(mongoClient)
-	// bodyRepo := mongodb.NewBodyRepository(mongoClient)
-	// userRepo := mongodb.NewUserRepository(mongoClient)
+	projectRepo := mongodb.NewProjectRepository(mongoClient)
+	logRepo := mongodb.NewAPILogRepository(mongoClient, cacheClient)
+	headersRepo := mongodb.NewHeadersRepository(mongoClient)
+	bodyRepo := mongodb.NewBodyRepository(mongoClient)
+	userRepo := mongodb.NewUserRepository(mongoClient)
 
 	// postgres repositories
-	pool, err := pgxpool.New(ctx, cfg.Postgres.URI)
-	if err != nil {
-		logger.Fatal("Failed to connect to Postgres", "error", err)
-	}
-	defer pool.Close()
+	// pool, err := pgxpool.New(ctx, cfg.Postgres.URI)
+	// logger.Info("Connecting to Postgres...", "uri", cfg.Postgres.URI)
+	// if err != nil {
+	// 	logger.Fatal("Failed to connect to Postgres", "error", err)
+	// }
+	// defer pool.Close()
 
-	projectRepoPG := postgres.NewProjectRepository(pool)
-	logRepoPG := postgres.NewAPILogRepository(pool)
-	headersRepoPG := postgres.NewAPILogHeadersRepository(pool)
-	bodyRepoPG := postgres.NewAPILogBodyRepository(pool)
-	userRepoPG := postgres.NewUserRepository(pool)
+	// projectRepoPG := postgres.NewProjectRepository(pool)
+	// logRepoPG := postgres.NewAPILogRepository(pool)
+	// headersRepoPG := postgres.NewAPILogHeadersRepository(pool)
+	// bodyRepoPG := postgres.NewAPILogBodyRepository(pool)
+	// userRepoPG := postgres.NewUserRepository(pool)
 
 	// Initialize services
-	projectService := service.NewProjectService(projectRepoPG)
-	logService := service.NewAPILogService(logRepoPG, headersRepoPG, bodyRepoPG)
-	userService := service.NewUserService(userRepoPG)
+	projectService := service.NewProjectService(projectRepo)
+	logService := service.NewAPILogService(logRepo, headersRepo, bodyRepo)
+	userService := service.NewUserService(userRepo)
 
 	// Initialize HTTP handlers
 	projectHandler := httpHandler.NewProjectHandler(projectService)
@@ -138,28 +150,28 @@ func main() {
 }
 
 // ginLogger is a custom Gin middleware for logging using zap
-func ginLogger() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
+// func ginLogger() gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		start := time.Now()
+// 		path := c.Request.URL.Path
+// 		query := c.Request.URL.RawQuery
 
-		c.Next()
+// 		c.Next()
 
-		latency := time.Since(start)
-		statusCode := c.Writer.Status()
+// 		latency := time.Since(start)
+// 		statusCode := c.Writer.Status()
 
-		logger.Info("Request",
-			"method", c.Request.Method,
-			"path", path,
-			"query", query,
-			"status", statusCode,
-			"latency", latency,
-			"ip", c.ClientIP(),
-			"user_agent", c.Request.UserAgent(),
-		)
-	}
-}
+// 		logger.Info("Request",
+// 			"method", c.Request.Method,
+// 			"path", path,
+// 			"query", query,
+// 			"status", statusCode,
+// 			"latency", latency,
+// 			"ip", c.ClientIP(),
+// 			"user_agent", c.Request.UserAgent(),
+// 		)
+// 	}
+// }
 
 // corsMiddleware adds CORS headers
 func corsMiddleware() gin.HandlerFunc {

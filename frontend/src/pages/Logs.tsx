@@ -3,6 +3,7 @@ import { Box, Button, Chip, CircularProgress, Dialog, DialogContent, DialogTitle
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
+import dayjs from "dayjs";
 import { useState } from "react";
 import DataTable, { type Column, type DataTableAction } from "../components/DataTable";
 import FilterToolbar, { type FilterConfig } from "../components/FilterToolbar";
@@ -59,7 +60,7 @@ export default function LogsPage() {
   environment: getFilterValueFromUrl(searchParams, "environment", "text") as string | undefined,
   statusCode: getFilterValueFromUrl(searchParams, "statusCode", "text") as string | number | undefined,
   date: getFilterValueFromUrl(searchParams, "date", "text") as string | undefined,
-  dateRange: getFilterValueFromUrl(searchParams, "dateRange", "text") as string | undefined,
+  dateRange: (getFilterValueFromUrl(searchParams, "dateRange", "text") as string) || `${dayjs().format("YYYY-MM-DD")}|${dayjs().format("YYYY-MM-DD")}`,
   path: getFilterValueFromUrl(searchParams, "path", "text") as string | undefined,
   projectId: getFilterValueFromUrl(searchParams, "projectId", "text") as string | undefined,
   search: getFilterValueFromUrl(searchParams, "search", "text") as string | undefined,

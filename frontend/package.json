@@ -23,6 +23,7 @@
     "@uiw/react-json-view": "^2.0.0-alpha.39",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.19",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-json-view-lite": "^2.5.0",

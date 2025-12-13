@@ -5,6 +5,7 @@ import (
 
 	"github.com/spidey52/api-logs/internal/domain"
 	"github.com/spidey52/api-logs/internal/ports/output"
+	"github.com/spidey52/api-logs/pkg/cache"
 	"github.com/spidey52/api-logs/pkg/logger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,12 +15,14 @@ import (
 // apiLogRepository implements APILogRepository interface
 type apiLogRepository struct {
 	collection *mongo.Collection
+	cache      cache.Cache
 }
 
 // NewAPILogRepository creates a new MongoDB API log repository
-func NewAPILogRepository(client *Client) output.APILogRepository {
+func NewAPILogRepository(client *Client, cache cache.Cache) output.APILogRepository {
 	return &apiLogRepository{
 		collection: client.Collection(CollectionAPILogs),
+		cache:      cache,
 	}
 }
 
@@ -147,12 +150,10 @@ func (r *apiLogRepository) Delete(ctx context.Context, id string) error {
 
 // CountByProject counts logs for a specific project
 func (r *apiLogRepository) CountByProject(ctx context.Context, projectID string, environment domain.Environment) (int64, error) {
-	filter := bson.M{
+	return r.collection.CountDocuments(ctx, bson.M{
 		"project_id":  projectID,
 		"environment": string(environment),
-	}
-
-	return r.collection.CountDocuments(ctx, filter)
+	})
 }
 
 // CountByFilter counts logs matching the filter criteria
