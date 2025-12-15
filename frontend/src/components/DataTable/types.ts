@@ -29,6 +29,7 @@ export interface DataTableProps<T = unknown> {
 	stickyHeader?: boolean;
 	pageKey: string; // Required for column visibility persistence
 	density?: "comfortable" | "standard" | "compact";
+	showIndex?: boolean;
 }
 
 export type DensityType = "comfortable" | "standard" | "compact";

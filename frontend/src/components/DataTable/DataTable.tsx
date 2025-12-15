@@ -26,6 +26,7 @@ export default function DataTable<T extends Record<string, unknown>>({
  stickyHeader = true,
  pageKey,
  density = "standard",
+ showIndex = true,
 }: DataTableProps<T>) {
  const [orderBy, setOrderBy] = useState<string>("");
  const [order, setOrder] = useState<SortOrder>("asc");
@@ -95,6 +96,8 @@ export default function DataTable<T extends Record<string, unknown>>({
 
  const sortedData = sortData(data, orderBy, order);
 
+ // page is 1-based in your usage; normalize to zero-based index for calculations
+
  return (
   <Paper sx={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
    <TableContainer sx={{ flex: 1, overflow: "auto" }}>
@@ -103,6 +106,20 @@ export default function DataTable<T extends Record<string, unknown>>({
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
        <SortableContext items={visibleColumns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
         <TableRow sx={{ height: rowHeight }}>
+         {showIndex && (
+          <TableCell
+           align='center'
+           sx={{
+            bgcolor: (theme) => (theme.palette.mode === "dark" ? "grey.800" : "grey.100"),
+            padding: cellPadding,
+            fontWeight: 600,
+            minWidth: 40,
+            width: 40,
+           }}
+          >
+           #
+          </TableCell>
+         )}
          {visibleColumns.map((column) => (
           <SortableHeaderCell key={column.id} column={column} orderBy={orderBy} order={order} density={density} onSort={handleSort} />
          ))}
@@ -141,13 +158,13 @@ export default function DataTable<T extends Record<string, unknown>>({
        // Loading skeletons
        Array.from({ length: rowsPerPage }).map((_, index) => (
         <TableRow key={`skeleton-${index}`} sx={{ height: rowHeight }}>
-         <DataTableSkeletonRow columnCount={visibleColumns.length} hasActions={!!actions && actions.length > 0} density={density} />
+         <DataTableSkeletonRow columnCount={visibleColumns.length + (showIndex ? 1 : 0)} hasActions={!!actions && actions.length > 0} density={density} />
         </TableRow>
        ))
       ) : sortedData.length === 0 ? (
        // Empty state
        <TableRow sx={{ height: rowHeight }}>
-        <TableCell colSpan={visibleColumns.length + (actions ? 1 : 0) + 1} align='center' sx={{ padding: cellPadding }}>
+        <TableCell colSpan={visibleColumns.length + (showIndex ? 1 : 0) + (actions ? 1 : 0) + 1} align='center' sx={{ padding: cellPadding }}>
          <Box sx={{ py: 4 }}>
           <Typography variant='body1' color='text.secondary'>
            {emptyMessage}
@@ -159,7 +176,7 @@ export default function DataTable<T extends Record<string, unknown>>({
        // Data rows
        sortedData.map((row, index) => (
         <TableRow hover key={index} onClick={() => onRowClick?.(row)} sx={{ cursor: onRowClick ? "pointer" : "default", height: rowHeight }}>
-         <DataTableRow row={row} columns={visibleColumns} actions={actions} density={density} />
+         <DataTableRow row={row} columns={visibleColumns} actions={actions} density={density} idx={page * rowsPerPage + index + 1} showIndex={showIndex} />
         </TableRow>
        ))
       )}

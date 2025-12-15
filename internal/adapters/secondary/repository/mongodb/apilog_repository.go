@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	"time"
 
 	"github.com/spidey52/api-logs/internal/domain"
 	"github.com/spidey52/api-logs/internal/ports/output"
@@ -132,6 +133,11 @@ func (r *apiLogRepository) FindByFilter(ctx context.Context, filter domain.LogFi
 	return logs, nil
 }
 
+func startOfDay(t time.Time) time.Time {
+	year, month, day := t.Date()
+	return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
+}
+
 // Delete removes a log by ID
 func (r *apiLogRepository) Delete(ctx context.Context, id string) error {
 	filter := bson.M{"_id": id}
@@ -151,6 +157,9 @@ func (r *apiLogRepository) Delete(ctx context.Context, id string) error {
 // CountByProject counts logs for a specific project
 func (r *apiLogRepository) CountByProject(ctx context.Context, projectID string, environment domain.Environment) (int64, error) {
 	return r.collection.CountDocuments(ctx, bson.M{
+		"timestamp": bson.M{
+			"$gte": startOfDay(time.Now()),
+		},
 		"project_id":  projectID,
 		"environment": string(environment),
 	})
@@ -219,6 +228,9 @@ func (r *apiLogRepository) CountByFilter(ctx context.Context, filter domain.LogF
 // GetStatusCodeDistribution returns distribution of status codes
 func (r *apiLogRepository) GetStatusCodeDistribution(ctx context.Context, projectID string, environment domain.Environment) (map[int]int64, error) {
 	filter := bson.M{
+		"timestamp": bson.M{
+			"$gte": startOfDay(time.Now()),
+		},
 		"project_id":  projectID,
 		"environment": string(environment),
 	}
@@ -255,6 +267,9 @@ func (r *apiLogRepository) GetStatusCodeDistribution(ctx context.Context, projec
 // GetAverageResponseTime returns average response time
 func (r *apiLogRepository) GetAverageResponseTime(ctx context.Context, projectID string, environment domain.Environment) (float64, error) {
 	filter := bson.M{
+		"timestamp": bson.M{
+			"$gte": startOfDay(time.Now()),
+		},
 		"project_id":  projectID,
 		"environment": string(environment),
 	}
@@ -289,6 +304,9 @@ func (r *apiLogRepository) GetAverageResponseTime(ctx context.Context, projectID
 // GetTimeSeriesStats returns request count grouped by hour for last 24 hours
 func (r *apiLogRepository) GetTimeSeriesStats(ctx context.Context, projectID string, environment domain.Environment) ([]map[string]interface{}, error) {
 	filter := bson.M{
+		"timestamp": bson.M{
+			"$gte": startOfDay(time.Now()),
+		},
 		"project_id":  projectID,
 		"environment": string(environment),
 	}
@@ -330,6 +348,11 @@ func (r *apiLogRepository) GetTimeSeriesStats(ctx context.Context, projectID str
 // GetTopEndpoints returns top N most requested endpoints
 func (r *apiLogRepository) GetTopEndpoints(ctx context.Context, projectID string, environment domain.Environment, limit int) ([]map[string]interface{}, error) {
 	filter := bson.M{
+
+		"timestamp": bson.M{
+			"$gte": startOfDay(time.Now()),
+		},
+
 		"project_id":  projectID,
 		"environment": string(environment),
 	}
@@ -369,6 +392,9 @@ func (r *apiLogRepository) GetMethodDistribution(ctx context.Context, projectID 
 	filter := bson.M{
 		"project_id":  projectID,
 		"environment": string(environment),
+		"timestamp": bson.M{
+			"$gte": startOfDay(time.Now()),
+		},
 	}
 
 	pipeline := mongo.Pipeline{
@@ -403,6 +429,10 @@ func (r *apiLogRepository) GetMethodDistribution(ctx context.Context, projectID 
 // GetUniquePaths returns list of unique paths for autocomplete
 func (r *apiLogRepository) GetUniquePaths(ctx context.Context, projectID string, environment domain.Environment) ([]string, error) {
 	filter := bson.M{
+		"timestamp": bson.M{
+			"$gte": startOfDay(time.Now()),
+		},
+
 		"project_id":  projectID,
 		"environment": string(environment),
 	}

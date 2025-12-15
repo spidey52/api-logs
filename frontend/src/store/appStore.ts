@@ -1,8 +1,6 @@
 import { Store } from "@tanstack/react-store";
-import type { Project } from "../lib/types";
 
 interface AppState {
-  selectedProject: Project | null;
   sidebarOpen: boolean;
   apiKey: string | null;
   environment: "dev" | "production";
@@ -13,18 +11,10 @@ const initialApiKey = localStorage.getItem("apiKey");
 const initialEnvironment = (localStorage.getItem("environment") || "dev") as "dev" | "production";
 
 export const appStore = new Store<AppState>({
-  selectedProject: null,
   sidebarOpen: true,
   apiKey: initialApiKey,
   environment: initialEnvironment,
 });
-
-export const setSelectedProject = (project: Project | null) => {
-  appStore.setState((state) => ({
-    ...state,
-    selectedProject: project,
-  }));
-};
 
 export const toggleSidebar = () => {
   appStore.setState((state) => ({

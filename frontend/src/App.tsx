@@ -12,7 +12,7 @@ function App() {
 
  // Detect system dark mode preference
  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
- const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">("system");
+ const [themeMode, setThemeMode] = useState<"light" | "dark" | "system">((localStorage.getItem("themeMode") as "light" | "dark" | "system") || "system");
 
  // Determine actual theme mode
  const actualMode = themeMode === "system" ? (prefersDarkMode ? "dark" : "light") : themeMode;
@@ -27,6 +27,10 @@ function App() {
    }),
   [actualMode],
  );
+
+ useEffect(() => {
+  localStorage.setItem("themeMode", themeMode);
+ }, [themeMode]);
 
  // Set router navigate function for API interceptor and store
  useEffect(() => {

@@ -199,7 +199,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 // @Router /users [get]
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
 	users, total, err := h.userService.ListUsers(c.Request.Context(), page, pageSize)
 	if err != nil {
@@ -209,7 +209,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 
 	c.JSON(http.StatusOK, UsersListResponse{
 		Data: users,
-		Pagination: PaginationInfo{
+		PaginationInfo: PaginationInfo{
 			Page:     page,
 			PageSize: pageSize,
 			Total:    total,
@@ -239,8 +239,10 @@ type UserResponse struct {
 }
 
 type UsersListResponse struct {
-	Data       []*domain.User `json:"data"`
-	Pagination PaginationInfo `json:"pagination"`
+	PaginationInfo
+	Data []*domain.User `json:"data"`
+	// Pagination PaginationInfo `json:"pagination"`
+	// Pagination PaginationInfo `json:"pagination"`
 }
 
 type PaginationInfo struct {

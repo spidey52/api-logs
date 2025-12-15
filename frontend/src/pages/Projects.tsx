@@ -27,6 +27,7 @@ import { projectsApi } from "../lib/api";
 import { getFilterValueFromUrl } from "../lib/filterUtils";
 import { formatters } from "../lib/formatters";
 import type { Project } from "../lib/types";
+import { setApiKey } from "../store/appStore";
 import { filterPreferencesStore, setFilterOrder, toggleFilterVisibility } from "../store/filterPreferencesStore";
 
 export default function ProjectsPage() {
@@ -172,6 +173,20 @@ export default function ProjectsPage() {
         {isCopied ? <CheckCircle fontSize='small' /> : <ContentCopy fontSize='small' />}
        </IconButton>
       </Tooltip>
+
+      {/* add a view button to set this api key */}
+
+      <Button
+       size='small'
+       variant='text'
+       onClick={(e) => {
+        e.stopPropagation();
+        setApiKey(value as string, (value as string).split("_")[0] === "dev" ? "dev" : "production");
+        navigate({ to: "/" });
+       }}
+      >
+       see logs
+      </Button>
      </Box>
     );
    },
