@@ -1,11 +1,13 @@
 import { DarkMode, Dashboard, Description, Folder, LightMode, Logout, Menu as MenuIcon, People, SettingsBrightness } from "@mui/icons-material";
-import { AppBar, Box, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Divider, Drawer, FormControl, IconButton, InputLabel, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, Select, Toolbar, Typography } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useStore } from "@tanstack/react-store";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { projectsApi } from "../lib/api";
 import { GLOBAL_SHORTCUTS } from "../lib/globalShortcuts";
 import { useKeyboardShortcut } from "../lib/keyboardRegistry";
-import { appStore, clearApiKey, toggleSidebar } from "../store/appStore";
+import { appStore, clearApiKey, setApiKey, toggleSidebar } from "../store/appStore";
 import { KeyboardShortcutsButton } from "./KeyboardShortcutsButton";
 
 const drawerWidth = 240;
@@ -40,6 +42,21 @@ export default function Layout({ children, themeMode, onThemeChange }: LayoutPro
   clearApiKey();
   navigate({ to: "/setup" });
  };
+
+ const { apiKey } = useStore(appStore);
+
+ const { data: projectsData } = useQuery({
+  queryKey: ["layout-projects"],
+  queryFn: () => projectsApi.getAll().then((res) => res.data),
+  staleTime: 5 * 60 * 1000,
+ });
+
+ const projects = useMemo(() => projectsData?.data || [], [projectsData]);
+
+ const selectedProject = useMemo(() => {
+  const project = projects.find((p) => p.api_key === apiKey);
+  return project || null;
+ }, [apiKey, projects]);
 
  // Register global keyboard shortcuts
  useKeyboardShortcut(
@@ -97,6 +114,25 @@ export default function Layout({ children, themeMode, onThemeChange }: LayoutPro
      <Typography variant='h6' noWrap component='div' sx={{ flexGrow: 1 }}>
       API Logs Dashboard
      </Typography>
+     {/* Project switcher */}
+     <FormControl size='small' sx={{ minWidth: 200, mr: 2, color: "inherit" }}>
+      <InputLabel id='project-switcher-label'>Project</InputLabel>
+      <Select
+       labelId='project-switcher-label'
+       label='Project'
+       value={selectedProject ? selectedProject.id : ""}
+       onChange={(e) => {
+        const val = e.target.value || null;
+        setApiKey(projects.find((p) => p.id === val)?.api_key || "", val ? (val.startsWith("dev_") ? "dev" : "production") : "production");
+       }}
+      >
+       {projects.map((p) => (
+        <MenuItem key={p.id} value={p.id}>
+         {p.name}
+        </MenuItem>
+       ))}
+      </Select>
+     </FormControl>
      <KeyboardShortcutsButton />
      <IconButton color='inherit' onClick={handleThemeToggle} title={`Theme: ${themeMode}`}>
       {themeMode === "light" ? <LightMode /> : themeMode === "dark" ? <DarkMode /> : <SettingsBrightness />}

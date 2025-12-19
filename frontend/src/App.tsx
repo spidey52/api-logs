@@ -1,14 +1,23 @@
 import { createTheme, CssBaseline, ThemeProvider, useMediaQuery } from "@mui/material";
+import { useQueryClient } from "@tanstack/react-query";
 import { Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import Layout from "./components/Layout";
 import { setRouterNavigate } from "./lib/api";
-import { setStoreNavigate } from "./store/appStore";
+import { appStore, setStoreNavigate } from "./store/appStore";
 
 function App() {
  const router = useRouterState();
  const navigate = useNavigate();
  const isSetupPage = router.location.pathname === "/setup";
+ const queryClient = useQueryClient();
+
+ appStore.subscribe((state) => {
+  if (state.currentVal.apiKey) {
+   queryClient.invalidateQueries({ type: "active" });
+  }
+  return;
+ });
 
  // Detect system dark mode preference
  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
