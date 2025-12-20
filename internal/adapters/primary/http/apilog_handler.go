@@ -331,10 +331,10 @@ func (h *APILogHandler) ListLogs(c *gin.Context) {
 		// Format: "startDate,endDate" (e.g., "2024-01-01,2024-01-31")
 		dates := strings.Split(dateRange, "|")
 		if len(dates) == 2 {
-			if startDate, err := time.Parse("2006-01-02", strings.TrimSpace(dates[0])); err == nil {
+			if startDate, err := time.ParseInLocation("2006-01-02", strings.TrimSpace(dates[0]), time.Local); err == nil {
 				filter.FromDate = &startDate
 			}
-			if endDate, err := time.Parse("2006-01-02", strings.TrimSpace(dates[1])); err == nil {
+			if endDate, err := time.ParseInLocation("2006-01-02", strings.TrimSpace(dates[1]), time.Local); err == nil {
 				// Set to end of day
 				endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, endDate.Location())
 				filter.ToDate = &endOfDay
