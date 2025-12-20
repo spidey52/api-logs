@@ -432,6 +432,7 @@ func (h *APILogHandler) CreateBatchLogs(c *gin.Context) {
 					ID:         uuid.NewString(),
 					Identifier: logReq.UserIdentifier,
 					Name:       logReq.UserName,
+					ProjectID:  projectID.(string),
 				}
 
 				if err := h.userService.CreateUser(c.Request.Context(), newUser); err == nil {
