@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,6 +16,7 @@ type apiLogService struct {
 	logRepo     output.APILogRepository
 	headersRepo output.APILogHeadersRepository
 	bodyRepo    output.APILogBodyRepository
+	userRepo    output.UserRepository
 }
 
 // NewAPILogService creates a new instance of APILogService
@@ -22,21 +24,18 @@ func NewAPILogService(
 	logRepo output.APILogRepository,
 	headersRepo output.APILogHeadersRepository,
 	bodyRepo output.APILogBodyRepository,
+	userRepo output.UserRepository,
 ) input.APILogService {
 	return &apiLogService{
 		logRepo:     logRepo,
 		headersRepo: headersRepo,
 		bodyRepo:    bodyRepo,
+		userRepo:    userRepo,
 	}
 }
 
 // CreateLog creates a new API log entry with optional headers and body
-func (s *apiLogService) CreateLog(
-	ctx context.Context,
-	log *domain.APILog,
-	headers *domain.APILogHeaders,
-	body *domain.APILogBody,
-) error {
+func (s *apiLogService) CreateLog(ctx context.Context, log *domain.APILog, headers *domain.APILogHeaders, body *domain.APILogBody) error {
 	// Validate core log
 	if err := log.Validate(); err != nil {
 		return domain.ErrInvalidInput
@@ -135,7 +134,38 @@ func (s *apiLogService) GetLogBody(ctx context.Context, logID string) (*domain.A
 // ListLogs retrieves logs based on filter criteria
 func (s *apiLogService) ListLogs(ctx context.Context, filter domain.LogFilter) ([]*domain.APILog, error) {
 	filter.ApplyDefaults()
-	return s.logRepo.FindByFilter(ctx, filter)
+	logs, err := s.logRepo.FindByFilter(ctx, filter)
+
+	if err != nil {
+		return nil, err
+	}
+
+	userIds := []string{}
+	for _, log := range logs {
+		if log.UserID != nil {
+			userIds = append(userIds, *log.UserID)
+		}
+	}
+
+	if len(userIds) > 0 {
+		fmt.Println("Fetching user details for logs:", userIds)
+		userMap, err := s.userRepo.GetUserMap(ctx, userIds)
+		if err != nil {
+			return nil, err
+		}
+
+		fmt.Println("Retrieved user map:", userMap)
+
+		for _, log := range logs {
+			if log.UserID != nil {
+				if user, exists := userMap[*log.UserID]; exists {
+					log.User = user
+				}
+			}
+		}
+	}
+
+	return logs, nil
 }
 
 // CountLogs counts logs matching the filter criteria

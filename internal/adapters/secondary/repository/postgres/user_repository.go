@@ -14,6 +14,11 @@ type UserRepository struct {
 	pool *pgxpool.Pool
 }
 
+// GetUserMap implements output.UserRepository.
+func (r *UserRepository) GetUserMap(ctx context.Context, ids []string) (map[string]*domain.User, error) {
+	panic("unimplemented")
+}
+
 func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
 	return &UserRepository{pool: pool}
 }

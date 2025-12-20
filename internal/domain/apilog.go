@@ -40,6 +40,8 @@ type APILog struct {
 	ErrorMessage  string            `json:"error_message,omitempty"`
 	UserID        *string           `json:"user_id,omitempty"` // Optional reference to User
 	Timestamp     time.Time         `json:"timestamp"`
+
+	User *User `json:"user,omitempty"` // Optional embedded user details
 }
 
 // Validate validates the API log entry

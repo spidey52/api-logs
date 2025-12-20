@@ -7,14 +7,14 @@ import (
 
 // Project represents a project that generates API logs
 type Project struct {
-	ID          string      `json:"id"`
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	APIKey      string      `json:"api_key"`
-	Environment Environment `json:"environment"`
-	IsActive    bool        `json:"is_active"`
-	CreatedAt   time.Time   `json:"created_at"`
-	UpdatedAt   time.Time   `json:"updated_at"`
+	ID          string      `json:"id" bson:"_id,omitempty"`
+	Name        string      `json:"name" bson:"name"`
+	Description string      `json:"description" bson:"description,omitempty"`
+	APIKey      string      `json:"api_key" bson:"api_key"`
+	Environment Environment `json:"environment" bson:"environment"`
+	IsActive    bool        `json:"is_active" bson:"is_active"`
+	CreatedAt   time.Time   `json:"created_at" bson:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at" bson:"updated_at"`
 }
 
 // Validate validates the project

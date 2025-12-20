@@ -4,13 +4,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type SetupRoutesParams struct {
+	Router           *gin.Engine
+	ProjectHandler   *ProjectHandler
+	APILogHandler    *APILogHandler
+	UserHandler      *UserHandler
+	AccessLogHandler *AccessLogHandler
+}
+
 // SetupRoutes configures all HTTP routes
-func SetupRoutes(
-	router *gin.Engine,
-	projectHandler *ProjectHandler,
-	apiLogHandler *APILogHandler,
-	userHandler *UserHandler,
-) {
+func SetupRoutes(params SetupRoutesParams) {
+
+	router := params.Router
+	projectHandler := params.ProjectHandler
+	apiLogHandler := params.APILogHandler
+	userHandler := params.UserHandler
+	accessLogHandler := params.AccessLogHandler
+
 	// API Documentation (Scalar UI)
 	docsHandler := NewDocsHandler()
 	router.GET("/docs", docsHandler.ServeDocs)
@@ -64,6 +74,13 @@ func SetupRoutes(
 			logs.GET("/:id/details", apiLogHandler.GetLogWithDetails)
 			logs.GET("/:id/headers", apiLogHandler.GetLogHeaders)
 			logs.GET("/:id/body", apiLogHandler.GetLogBody)
+		}
+
+		// access log routes
+		accessLogs := v1.Group("/access-logs")
+		{
+			accessLogs.POST("", accessLogHandler.CreateAccessLog)
+			accessLogs.GET("", accessLogHandler.GetAccessLogs)
 		}
 	}
 }

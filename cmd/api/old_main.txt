@@ -1,0 +1,161 @@
+package main
+
+import (
+	"context"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/spidey52/api-logs/internal/app"
+	"github.com/spidey52/api-logs/pkg/config"
+	"github.com/spidey52/api-logs/pkg/logger"
+)
+
+// import (
+// 	"context"
+// 	"fmt"
+// 	"net/http"
+// 	"os"
+// 	"os/signal"
+// 	"syscall"
+// 	"time"
+
+// 	"github.com/gin-gonic/gin"
+// 	"github.com/redis/go-redis/v9"
+// 	httpHandler "github.com/spidey52/api-logs/internal/adapters/primary/http"
+// 	"github.com/spidey52/api-logs/internal/adapters/primary/service"
+// 	"github.com/spidey52/api-logs/internal/adapters/secondary/repository/mongodb"
+// 	"github.com/spidey52/api-logs/pkg/cache"
+// 	"github.com/spidey52/api-logs/pkg/config"
+// 	"github.com/spidey52/api-logs/pkg/logger"
+// )
+
+// func main() {
+// 	// Load configuration
+// 	cfg := config.Load()
+
+// 	// Initialize logger
+// 	if err := logger.Init(cfg.App.LogLevel); err != nil {
+// 		fmt.Printf("Failed to initialize logger: %v\n", err)
+// 		os.Exit(1)
+// 	}
+
+// 	logger.Info("Starting API Logs service",
+// 		"environment", cfg.App.Environment,
+// 		"port", cfg.Server.Port,
+// 	)
+
+// 	// Create context for graceful shutdown
+// 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+// 	defer cancel()
+
+// 	logger.Info("Connecting to MongoDB...", "uri", cfg.MongoDB.URI)
+
+// 	// Initialize MongoDB client
+// 	mongoClient, err := mongodb.NewClient(ctx, cfg.MongoDB.URI, cfg.MongoDB.Database)
+// 	if err != nil {
+// 		logger.Fatal("Failed to connect to MongoDB", "error", err)
+// 	}
+// 	defer func() {
+// 		if err := mongoClient.Close(context.Background()); err != nil {
+// 			logger.Error("Failed to close MongoDB connection", "error", err)
+// 		}
+// 	}()
+
+// 	logger.Info("Connected to MongoDB successfully")
+
+// 	// Create indexes
+// 	if err := mongoClient.CreateIndexes(ctx); err != nil {
+// 		logger.Fatal("Failed to create MongoDB indexes", "error", err)
+// 	}
+// 	logger.Info("MongoDB indexes created successfully")
+
+// 	// cache initialization here
+// 	cacheClient := cache.NewRedisCache(&redis.Options{
+// 		Addr: "localhost:6379",
+// 	})
+
+// 	defer func() {
+// 		if err := cacheClient.Close(); err != nil {
+// 			logger.Error("Failed to close cache connection", "error", err)
+// 		}
+// 	}()
+
+// 	// Initialize repositories
+// 	projectRepo := mongodb.NewProjectRepository(mongoClient)
+// 	logRepo := mongodb.NewAPILogRepository(mongoClient, cacheClient)
+// 	headersRepo := mongodb.NewHeadersRepository(mongoClient)
+// 	bodyRepo := mongodb.NewBodyRepository(mongoClient)
+// 	userRepo := mongodb.NewUserRepository(mongoClient)
+// 	accessLogRepo := mongodb.NewMongoAccessLogRepository(mongoClient)
+
+// 	// Initialize services
+// 	projectService := service.NewProjectService(projectRepo)
+// 	logService := service.NewAPILogService(logRepo, headersRepo, bodyRepo)
+// 	userService := service.NewUserService(userRepo)
+// 	accessLogService := service.NewAccessLogService(accessLogRepo)
+
+// 	// Initialize HTTP handlers
+// 	projectHandler := httpHandler.NewProjectHandler(projectService)
+// 	apiLogHandler := httpHandler.NewAPILogHandler(logService, projectService, userService)
+// 	userHandler := httpHandler.NewUserHandler(userService)
+// 	accessLogHandler := httpHandler.NewAccessLogHandler(accessLogService)
+
+// 	// Setup Gin router
+// 	if cfg.App.IsProductionMode() {
+// 		gin.SetMode(gin.ReleaseMode)
+// 	}
+
+// 	router := gin.New()
+// 	router.Use(gin.Recovery())
+// 	router.Use(gin.Logger())
+
+// 	// Setup routes
+// 	httpHandler.SetupRoutes(
+// 		httpHandler.SetupRoutesParams{
+// 			Router:           router,
+// 			ProjectHandler:   projectHandler,
+// 			APILogHandler:    apiLogHandler,
+// 			UserHandler:      userHandler,
+// 			AccessLogHandler: accessLogHandler,
+// 		},
+// 	)
+
+// 	// Create HTTP server
+// 	srv := &http.Server{
+// 		Addr:         cfg.Server.Host + ":" + cfg.Server.Port,
+// 		Handler:      router,
+// 		ReadTimeout:  10 * time.Second,
+// 		WriteTimeout: 10 * time.Second,
+// 		IdleTimeout:  60 * time.Second,
+// 	}
+
+// 	// Start server in a goroutine
+// 	go func() {
+// 		logger.Info("Server starting", "address", srv.Addr)
+// 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+// 			logger.Fatal("Failed to start server", "error", err)
+// 		}
+// 	}()
+
+// 	// Wait for interrupt signal to gracefully shutdown the server
+// 	quit := make(chan os.Signal, 1)
+// 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+// 	<-quit
+
+// 	logger.Info("Shutting down server...")
+
+// 	// Graceful shutdown with timeout
+// 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+// 	defer shutdownCancel()
+
+// 	if err := srv.Shutdown(shutdownCtx); err != nil {
+// 		logger.Fatal("Server forced to shutdown", "error", err)
+// 	}
+
+// 	logger.Info("Server exited successfully")
+// }
+

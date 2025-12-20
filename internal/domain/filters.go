@@ -23,7 +23,7 @@ type LogFilter struct {
 }
 
 // ApplyDefaults sets default values for pagination
-func (f *LogFilter) ApplyDefaults() {
+func (f *SharedFilter) ApplyDefaults() {
 	if f.Limit == 0 {
 		f.Limit = 100
 	}

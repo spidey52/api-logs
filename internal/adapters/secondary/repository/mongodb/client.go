@@ -18,6 +18,7 @@ const (
 	CollectionAPILogHeaders   = "api_log_headers"
 	CollectionAPILogBodies    = "api_log_bodies"
 	CollectionUsers           = "users"
+	CollectionAccessLogs      = "access_logs"
 
 	// TTL durations
 	LogsTTLDays    = 30
@@ -165,12 +166,21 @@ func (c *Client) CreateIndexes(ctx context.Context) error {
 			Options: options.Index().SetUnique(true),
 		},
 		{
-			Keys: bson.D{{Key: "email", Value: 1}},
-		},
-		{
 			Keys: bson.D{{Key: "created_at", Value: -1}},
 		},
 	})
+	if err != nil {
+		return err
+	}
+
+	accessLogCol := c.Collection(CollectionAccessLogs)
+
+	_, err = accessLogCol.Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{
+			Keys: bson.D{{Key: "project_id", Value: 1}, {Key: "actor_id", Value: 1}, {Key: "timestamp", Value: -1}},
+		},
+	})
+
 	if err != nil {
 		return err
 	}

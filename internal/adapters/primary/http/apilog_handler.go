@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/spidey52/api-logs/internal/domain"
 	"github.com/spidey52/api-logs/internal/ports/input"
 	"github.com/spidey52/api-logs/pkg/logger"
@@ -194,7 +195,7 @@ func (h *APILogHandler) GetLog(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Log not found"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve log"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve log", "details": err.Error()})
 		return
 	}
 
@@ -346,14 +347,14 @@ func (h *APILogHandler) ListLogs(c *gin.Context) {
 
 	logs, err := h.logService.ListLogs(c.Request.Context(), filter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve logs"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve logs", "details": err.Error()})
 		return
 	}
 
 	// Get total count for pagination
 	total, err := h.logService.CountLogs(c.Request.Context(), filter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get total count"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get total count", "details": err.Error()})
 		return
 	}
 
@@ -428,6 +429,7 @@ func (h *APILogHandler) CreateBatchLogs(c *gin.Context) {
 			case domain.ErrUserNotFound:
 				// Create new user
 				newUser := &domain.User{
+					ID:         uuid.NewString(),
 					Identifier: logReq.UserIdentifier,
 					Name:       logReq.UserName,
 				}

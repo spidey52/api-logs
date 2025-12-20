@@ -25,4 +25,6 @@ type UserRepository interface {
 
 	// List retrieves all users with pagination
 	List(ctx context.Context, page, pageSize int) ([]*domain.User, int, error)
+
+	GetUserMap(ctx context.Context, ids []string) (map[string]*domain.User, error)
 }

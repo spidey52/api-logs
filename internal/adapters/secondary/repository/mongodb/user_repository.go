@@ -128,3 +128,28 @@ func (r *userRepository) List(ctx context.Context, page, pageSize int) ([]*domai
 
 	return users, int(total), nil
 }
+
+func (r *userRepository) GetUserMap(ctx context.Context, ids []string) (map[string]*domain.User, error) {
+	filter := bson.M{"_id": bson.M{"$in": ids}}
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	userMap := make(map[string]*domain.User)
+	for cursor.Next(ctx) {
+		var doc userDocument
+		if err := cursor.Decode(&doc); err != nil {
+			return nil, err
+		}
+		user := documentToUser(&doc)
+		userMap[user.ID] = user
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return userMap, nil
+}
