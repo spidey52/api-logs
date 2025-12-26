@@ -109,6 +109,10 @@ func (r *apiLogRepository) FindByFilter(ctx context.Context, filter domain.LogFi
 		mongoFilter["timestamp"] = timeFilter
 	}
 
+	if filter.UserID != "" {
+		mongoFilter["user_id"] = filter.UserID
+	}
+
 	opts := options.Find().
 		SetLimit(int64(filter.Limit)).
 		SetSkip(int64(filter.Offset)).

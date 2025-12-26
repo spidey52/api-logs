@@ -20,6 +20,7 @@ type LogFilter struct {
 	Search        string
 	FromDate      *time.Time
 	ToDate        *time.Time
+	UserID       string
 }
 
 // ApplyDefaults sets default values for pagination

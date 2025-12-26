@@ -263,6 +263,7 @@ func (h *APILogHandler) GetLogBody(c *gin.Context) {
 func (h *APILogHandler) ListLogs(c *gin.Context) {
 	// Get project info from middleware
 	projectID, _ := c.Get("project_id")
+	userID, _ := c.Get("user_id")
 	environment := c.Query("environment")
 
 	logger.Info("Listing logs for project", projectID, "environment", environment)
@@ -282,6 +283,10 @@ func (h *APILogHandler) ListLogs(c *gin.Context) {
 				}
 			}
 		}
+	}
+
+	if userID != nil {
+		filter.UserID = userID.(string)
 	}
 
 	// Parse filter parameters
