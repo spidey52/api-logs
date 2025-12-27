@@ -85,7 +85,7 @@ func (s *userService) ListUsers(ctx context.Context, page, pageSize int) ([]*dom
 	if page < 1 {
 		page = 1
 	}
-	if pageSize < 1 || pageSize > 100 {
+	if pageSize < 1 || pageSize > 10000 {
 		pageSize = 10
 	}
 
